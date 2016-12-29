@@ -9,7 +9,8 @@ proj.win8.1-universal/
 proj.ios_mac/
 proj.android-studio/
 proj.linux/
+proj.tizen/
 Resources/
 
-*.vcxproj
 *.suo
+*.sdf
