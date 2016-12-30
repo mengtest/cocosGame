@@ -1,14 +1,14 @@
 #pragma once
 
 #include "cocos2d.h"
-#include "HelloWorldScene.h"
-class MenuScreen : public cocos2d::LayerColor
+#include "GameScene.h"
+class MainMenuScene : public cocos2d::LayerColor
 {
 public:
-	MenuScreen();
-	~MenuScreen();
+	MainMenuScene();
+	~MainMenuScene();
 
-	CREATE_FUNC(MenuScreen);
+	CREATE_FUNC(MainMenuScene);
 
 	static cocos2d::Scene* createScene();
 

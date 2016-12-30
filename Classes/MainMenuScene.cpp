@@ -1,25 +1,25 @@
-#include "MenuScreen.h"
+#include "MainMenuScene.h"
 #include "SimpleAudioEngine.h"
 
 USING_NS_CC;
 
-MenuScreen::MenuScreen()
+MainMenuScene::MainMenuScene()
 {
 }
 
-MenuScreen::~MenuScreen()
+MainMenuScene::~MainMenuScene()
 {
 }
 
-Scene* MenuScreen::createScene()
+Scene* MainMenuScene::createScene()
 {
 	auto scene = Scene::create();
-	auto layer = MenuScreen::create();
+	auto layer = MainMenuScene::create();
 	scene->addChild(layer);
 	return scene;
 }
 
-bool MenuScreen::init()
+bool MainMenuScene::init()
 {
 	if (!LayerColor::initWithColor(Color4B(157, 181, 173, 255))){
 		return false;
@@ -36,10 +36,10 @@ bool MenuScreen::init()
 	endGame->setColor(Color3B(255, 255, 255));
 
 	menuItems.pushBack(MenuItemLabel::create(startGame,
-		CC_CALLBACK_1(MenuScreen::startNewGame, this)));
+		CC_CALLBACK_1(MainMenuScene::startNewGame, this)));
 
 	menuItems.pushBack(MenuItemLabel::create(endGame,
-		CC_CALLBACK_1(MenuScreen::menuCloseCallback, this)));
+		CC_CALLBACK_1(MainMenuScene::menuCloseCallback, this)));
 
 
 	auto menu = Menu::createWithArray(menuItems);
@@ -62,17 +62,17 @@ bool MenuScreen::init()
 
 }
 
-void MenuScreen::startNewGame(Ref* pSender) {
-	auto scene = HelloWorld::createScene();
+void MainMenuScene::startNewGame(Ref* pSender) {
+	auto scene = GameScene::createScene();
 	Director::getInstance()->replaceScene(scene);
 }
 
-void MenuScreen::menuCloseCallback(Ref* pSender)
+void MainMenuScene::menuCloseCallback(Ref* pSender)
 {
 	close();
 }
 
-void MenuScreen::close() {
+void MainMenuScene::close() {
 	Director::getInstance()->end();
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)

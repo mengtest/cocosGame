@@ -1,17 +1,17 @@
-#include "HelloWorldScene.h"
+#include "GameScene.h"
 #include "SimpleAudioEngine.h"
 
 USING_NS_CC;
 
-Scene* HelloWorld::createScene()
+Scene* GameScene::createScene()
 {
     auto scene = Scene::create();
-    auto layer = HelloWorld::create();
+	auto layer = GameScene::create();
     scene->addChild(layer);
     return scene;
 }
 
-HelloWorld::~HelloWorld()
+GameScene::~GameScene()
 {
 	if (_targets)
 	{
@@ -26,17 +26,17 @@ HelloWorld::~HelloWorld()
 	}
 }
 
-HelloWorld::HelloWorld(): _targets(NULL), _projectiles(NULL) {}
+GameScene::GameScene() : _targets(NULL), _projectiles(NULL) {}
 
-bool HelloWorld::init()
+bool GameScene::init()
 {
 	if (!LayerColor::initWithColor(Color4B(157, 181, 173, 255))){
 		return false;
 	}
 	initArrays();
 	initMenuButton();
-	this->schedule(schedule_selector(HelloWorld::gameLogic), spawnEnemyFrequency);
-	this->schedule(schedule_selector(HelloWorld::update));
+	this->schedule(schedule_selector(GameScene::gameLogic), spawnEnemyFrequency);
+	this->schedule(schedule_selector(GameScene::update));
 	this->setTouchEnabled(true);
 	this->addTouchListener();
 	createPlayer();
@@ -45,7 +45,7 @@ bool HelloWorld::init()
     return true;
 }
 
-void HelloWorld::createPlayer() {
+void GameScene::createPlayer() {
 
 	Size winSize = CCDirector::sharedDirector()->getWinSize();
 
@@ -56,7 +56,7 @@ void HelloWorld::createPlayer() {
 
 }
 
-void HelloWorld::initMenuButton() {
+void GameScene::initMenuButton() {
 
 	auto visibleSize = Director::getInstance()->getVisibleSize();
 	Vec2 origin = Director::getInstance()->getVisibleOrigin();
@@ -64,7 +64,7 @@ void HelloWorld::initMenuButton() {
 	auto menuButton = MenuItemImage::create(
 		"images/ui/menu.png",
 		"images/ui/menu.png",
-		CC_CALLBACK_1(HelloWorld::menuOpenMenuCallback, this));
+		CC_CALLBACK_1(GameScene::menuOpenMenuCallback, this));
 	menuButton->setPosition(Vec2(origin.x + visibleSize.width - menuButton->getContentSize().width / 2,
 		origin.y + visibleSize.height - menuButton->getContentSize().height / 2));
 
@@ -73,14 +73,14 @@ void HelloWorld::initMenuButton() {
 	this->addChild(menu, 1);
 }
 
-void HelloWorld::initArrays() {
+void GameScene::initArrays() {
 	_targets = CCArray::create();
 	_targets->retain();
 	_projectiles = CCArray::create();
 	_projectiles->retain();
 }
 
-void HelloWorld::addKeyboardEventListener() {
+void GameScene::addKeyboardEventListener() {
 
 	auto eventListener = EventListenerKeyboard::create();
 
@@ -135,19 +135,19 @@ void HelloWorld::addKeyboardEventListener() {
 	this->_eventDispatcher->addEventListenerWithSceneGraphPriority(eventListener, player);
 }
 
-void HelloWorld::addAccelarationEventListener() {
+void GameScene::addAccelarationEventListener() {
 
 	Device::setAccelerometerEnabled(true);
-	auto listener = EventListenerAcceleration::create(CC_CALLBACK_2(HelloWorld::onAcceleration, this));
+	auto listener = EventListenerAcceleration::create(CC_CALLBACK_2(GameScene::onAcceleration, this));
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
 
 }
-//void HelloWorld::realInit(CCNode* sender) {
+//void GameScene::realInit(CCNode* sender) {
 //
 //
 //}
 
-void HelloWorld::onAcceleration(cocos2d::Acceleration *acc, cocos2d::Event *event){
+void GameScene::onAcceleration(cocos2d::Acceleration *acc, cocos2d::Event *event){
 
 	//char buffer[100];
 	//sprintf(buffer, "x:%f\ny:%f\nz:%f\nplayer.x:%f\nplayer.y:%f", acc->x, acc->y, acc->z, player->getPosition().x, player->getPosition().y);
@@ -170,7 +170,7 @@ void HelloWorld::onAcceleration(cocos2d::Acceleration *acc, cocos2d::Event *even
 	movementStarted = true;
 }
 
-void HelloWorld::onTouchesEnded(const std::vector<cocos2d::Touch *> &touches, cocos2d::Event *event){
+void GameScene::onTouchesEnded(const std::vector<cocos2d::Touch *> &touches, cocos2d::Event *event){
 
 	for (auto& touch : touches) {
 		if (touch) {
@@ -179,7 +179,7 @@ void HelloWorld::onTouchesEnded(const std::vector<cocos2d::Touch *> &touches, co
 	}
 }
 
-void HelloWorld::shoot() {
+void GameScene::shoot() {
 	CCSize winSize = CCDirector::sharedDirector()->getWinSize();
 	CCSprite *projectile = CCSprite::create("images/bullet.png");
 	projectile->setPosition(ccp(player->getPositionX() + player->getContentSize().width - projectile->getContentSize().width * 2, player->getPositionY() - projectile->getContentSize().height / 2));
@@ -204,7 +204,7 @@ void HelloWorld::shoot() {
 	projectile->runAction(actionMove);
 }
 
-void HelloWorld::addMonster(){
+void GameScene::addMonster(){
 
 	CCSize winSize = CCDirector::sharedDirector()->getWinSize();
 	CCSprite *monster = CCSprite::create("images/mobs/worm1.png");
@@ -252,10 +252,10 @@ void HelloWorld::addMonster(){
 	int actualDuration = (rand() % rangeDuration) + minDuration;
 
 	//auto actionMove = MoveTo::create((float)actualDuration,	ccp(0 - monsterWidth / 2, actualY));
-	//auto actionMoveDone = CallFuncN::create(this, callfuncN_selector(HelloWorld::spriteMoveFinished));
+	//auto actionMoveDone = CallFuncN::create(this, callfuncN_selector(GameScene::spriteMoveFinished));
 	//// создаем действия
 	//CCFiniteTimeAction* actionMove = CCMoveTo::actionWithDuration((float)actualDuration, ccp(0 - monsterWidth / 2, actualY));
-	//CCFiniteTimeAction* actionMoveDone = CCCallFuncN::actionWithTarget(this, callfuncN_selector(HelloWorld::spriteMoveFinished));
+	//CCFiniteTimeAction* actionMoveDone = CCCallFuncN::actionWithTarget(this, callfuncN_selector(GameScene::spriteMoveFinished));
 
 	//monster->runAction(actionMove);
 
@@ -264,16 +264,16 @@ void HelloWorld::addMonster(){
 		ccp(0 - monster->getContentSize().width / 2, actualY));
 	CCFiniteTimeAction* actionMoveDone =
 		CCCallFuncN::create(this,
-		CC_CALLFUNCN_SELECTOR(HelloWorld::spriteMoveFinished));
+		CC_CALLFUNCN_SELECTOR(GameScene::spriteMoveFinished));
 	monster->runAction(CCSequence::create(actionMove,
 		actionMoveDone, NULL));
 }
 
-void HelloWorld::gameLogic(float dt){
+void GameScene::gameLogic(float dt){
 	addMonster();
 }
 
-void HelloWorld::update(float dt)
+void GameScene::update(float dt)
 {
 	checkTouch();
 	float newX = 0;
@@ -356,13 +356,13 @@ void HelloWorld::update(float dt)
 	targetsToDelete->release();
 }
 
-void HelloWorld::checkTouch() {
+void GameScene::checkTouch() {
 	if ( ! this->isTouchEnabled() ) {
 		this->setTouchEnabled(true);
 	}
 }
 
-void HelloWorld::spriteMoveFinished(CCNode* sender)
+void GameScene::spriteMoveFinished(CCNode* sender)
 {
 	CCSprite *sprite = (CCSprite *)sender;
 	this -> removeChild(sprite, true);
@@ -377,11 +377,11 @@ void HelloWorld::spriteMoveFinished(CCNode* sender)
 	}
 }
 
-void HelloWorld::menuOpenMenuCallback(Ref* pSender) {
+void GameScene::menuOpenMenuCallback(Ref* pSender) {
 	openMenu();
 }
 
-void HelloWorld::openMenu() {
+void GameScene::openMenu() {
 	Director::getInstance()->pause();
 	this->setTouchEnabled(false);
 	auto scene = PauseScene::createScene();
@@ -390,7 +390,7 @@ void HelloWorld::openMenu() {
 	//Director::getInstance()->replaceScene(scene);
 }
 
-void HelloWorld::menuCloseCallback(Ref* pSender)
+void GameScene::menuCloseCallback(Ref* pSender)
 {
     //Close the cocos2d-x game scene and quit the application
     Director::getInstance()->end();

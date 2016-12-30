@@ -1,17 +1,17 @@
-#ifndef __HELLOWORLD_SCENE_H__
-#define __HELLOWORLD_SCENE_H__
+#ifndef __GAME_SCENE_H__
+#define __GAME_SCENE_H__
 
 #define PAUSE_SCENE_TAG 99
 
 #include "cocos2d.h"
-#include "MenuScreen.h"
+#include "MainMenuScene.h"
 #include "PauseScene.h"
 
-class HelloWorld : public cocos2d::LayerColor
+class GameScene : public cocos2d::LayerColor
 {
 public:
-	HelloWorld();
-	~HelloWorld();
+	GameScene();
+	~GameScene();
     static cocos2d::Scene* createScene();
 	cocos2d::Label* acceleration;
 	cocos2d::Label* label;
@@ -54,10 +54,10 @@ public:
     void menuCloseCallback(cocos2d::Ref* pSender);
     
     // implement the "static create()" method manually
-    CREATE_FUNC(HelloWorld);
+	CREATE_FUNC(GameScene);
 protected:
 	cocos2d::CCArray *_targets;
 	cocos2d::CCArray *_projectiles;
 };
 
-#endif // __HELLOWORLD_SCENE_H__
+#endif // __GAME_SCENE_H__

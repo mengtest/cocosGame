@@ -2,7 +2,7 @@
 #pragma once
 
 #include "cocos2d.h"
-#include "HelloWorldScene.h"
+#include "GameScene.h"
 class PauseScene : public cocos2d::LayerColor
 {
 public:
