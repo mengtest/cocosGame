@@ -30,55 +30,57 @@ HelloWorld::HelloWorld(): _targets(NULL), _projectiles(NULL) {}
 
 bool HelloWorld::init()
 {
-	_targets = CCArray::create();
-	_targets->retain();
-	_projectiles = CCArray::create();
-	_projectiles->retain();
-
 	if (!LayerColor::initWithColor(Color4B(157, 181, 173, 255))){
 		return false;
 	}
-    
+	initArrays();
+	initMenuButton();
+	this->schedule(schedule_selector(HelloWorld::gameLogic), spawnEnemyFrequency);
+	this->schedule(schedule_selector(HelloWorld::update));
+	this->setTouchEnabled(true);
+	this->addTouchListener();
+	createPlayer();
+	addKeyboardEventListener();
+	addAccelarationEventListener();
+    return true;
+}
 
+void HelloWorld::createPlayer() {
 
+	Size winSize = CCDirector::sharedDirector()->getWinSize();
 
+	player = Sprite::create("images/player/1.png");
+	player->setScale(1);
+	player->setPosition(Vec2(player->getContentSize().width * 2, winSize.height / 2));
+	this->addChild(player, 0, "player");
+
+}
+
+void HelloWorld::initMenuButton() {
 
 	auto visibleSize = Director::getInstance()->getVisibleSize();
 	Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-	auto closeItem = MenuItemImage::create(
+	auto menuButton = MenuItemImage::create(
 		"images/ui/menu.png",
 		"images/ui/menu.png",
 		CC_CALLBACK_1(HelloWorld::menuOpenMenuCallback, this));
-	closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width / 2,
-		origin.y + visibleSize.height - closeItem->getContentSize().height / 2));
+	menuButton->setPosition(Vec2(origin.x + visibleSize.width - menuButton->getContentSize().width / 2,
+		origin.y + visibleSize.height - menuButton->getContentSize().height / 2));
 
-	auto menu = Menu::create(closeItem, NULL);
+	auto menu = Menu::create(menuButton, NULL);
 	menu->setPosition(Vec2::ZERO);
 	this->addChild(menu, 1);
+}
 
-	this->schedule(schedule_selector(HelloWorld::gameLogic), spawnEnemyFrequency);
+void HelloWorld::initArrays() {
+	_targets = CCArray::create();
+	_targets->retain();
+	_projectiles = CCArray::create();
+	_projectiles->retain();
+}
 
-	this->setTouchEnabled(true);
-	this->addTouchListener();
-	this->schedule(schedule_selector(HelloWorld::update));
-
-	Device::setAccelerometerEnabled(true);
-	auto listener = EventListenerAcceleration::create(CC_CALLBACK_2(HelloWorld::onAcceleration, this));
-	_eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
-	label = Label::createWithTTF("Hello, Glenda!", "fonts/Marker Felt.ttf", 24);
-	label->setColor(Color3B(0, 0, 0));
-
-	label->setPosition(Vec2(visibleSize.width / 2, label->getContentSize().height / 2));
-	//this->addChild(label, 2);
-
-	double temp = 145;
-	double temp2 = 56;
-	double temp3 = 56;
-	char buffer1[100];
-	sprintf(buffer1, "x:%f\ny:%f\nz:%f\nplayer.x:%f\nplayer.y:%f", temp, temp2, temp3, player->getPosition().x, player->getPosition().y);
-	acceleration->setString(buffer1);
-	acceleration->setPosition(Vec2(acceleration->getContentSize().width, visibleSize.height - acceleration->getContentSize().height));
+void HelloWorld::addKeyboardEventListener() {
 
 	auto eventListener = EventListenerKeyboard::create();
 
@@ -110,6 +112,7 @@ bool HelloWorld::init()
 			break;
 		}
 	};
+
 	eventListener->onKeyReleased = [&](EventKeyboard::KeyCode keyCode, Event* event){
 
 		Vec2 loc = event->getCurrentTarget()->getPosition();
@@ -130,37 +133,15 @@ bool HelloWorld::init()
 	};
 
 	this->_eventDispatcher->addEventListenerWithSceneGraphPriority(eventListener, player);
-
-
-
-
-
-	//HelloWorld::acceleration = Label::createWithTTF("acceleration", "fonts/Marker Felt.ttf", 24);
-	//acceleration -> setColor(Color3B(0, 0, 0));
-
-	//this->addChild(acceleration, 1);
-    
-	Size winSize = CCDirector::sharedDirector()->getWinSize();
-
-	player = Sprite::create("images/player/1.png");
-	player->setScale(1);
-	player->setPosition(Vec2(0 , winSize.height / 2));
-	this->addChild(player, 0, "player");
-
-	//2 * player->getContentSize().width
-
-	//CCFiniteTimeAction* actionMove =
-	//	CCMoveTo::create((float)2,
-	//	ccp(2 * player->getContentSize().width, player->getPosition().y));
-	//CCFiniteTimeAction* actionMoveDone =
-	//	CCCallFuncN::create(this,
-	//	CC_CALLFUNCN_SELECTOR(HelloWorld::realInit));
-	//player->runAction(CCSequence::create(actionMove,
-	//	actionMoveDone, NULL));
-
-    return true;
 }
 
+void HelloWorld::addAccelarationEventListener() {
+
+	Device::setAccelerometerEnabled(true);
+	auto listener = EventListenerAcceleration::create(CC_CALLBACK_2(HelloWorld::onAcceleration, this));
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+
+}
 //void HelloWorld::realInit(CCNode* sender) {
 //
 //
@@ -231,8 +212,8 @@ void HelloWorld::addMonster(){
 	Vector<SpriteFrame*> animFrames;
 	animFrames.reserve(2);
 
-	animFrames.pushBack(SpriteFrame::create("images/mobs/worm1.png", Rect(0, 0, 54, 50)));
-	animFrames.pushBack(SpriteFrame::create("images/mobs/worm2.png", Rect(0, 0, 54, 50)));
+	animFrames.pushBack(SpriteFrame::create("images/mobs/worm1.png", Rect(0, 0, 108, 100)));
+	animFrames.pushBack(SpriteFrame::create("images/mobs/worm2.png", Rect(0, 0, 108, 100)));
 
 	// create the animation out of the frames
 	Animation* animation = Animation::createWithSpriteFrames(animFrames, 0.2f);
@@ -294,6 +275,7 @@ void HelloWorld::gameLogic(float dt){
 
 void HelloWorld::update(float dt)
 {
+	checkTouch();
 	float newX = 0;
 	float newY = 0;
 	if (movementStarted) {
@@ -374,6 +356,12 @@ void HelloWorld::update(float dt)
 	targetsToDelete->release();
 }
 
+void HelloWorld::checkTouch() {
+	if ( ! this->isTouchEnabled() ) {
+		this->setTouchEnabled(true);
+	}
+}
+
 void HelloWorld::spriteMoveFinished(CCNode* sender)
 {
 	CCSprite *sprite = (CCSprite *)sender;
@@ -394,8 +382,12 @@ void HelloWorld::menuOpenMenuCallback(Ref* pSender) {
 }
 
 void HelloWorld::openMenu() {
-	auto scene = MenuScreen::createScene();
-	Director::getInstance()->replaceScene(scene);
+	Director::getInstance()->pause();
+	this->setTouchEnabled(false);
+	auto scene = PauseScene::createScene();
+	scene->setTag(PAUSE_SCENE_TAG);
+	addChild(scene, 0);
+	//Director::getInstance()->replaceScene(scene);
 }
 
 void HelloWorld::menuCloseCallback(Ref* pSender)

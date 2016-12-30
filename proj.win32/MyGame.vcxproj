@@ -147,12 +147,14 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y
     <ClCompile Include="..\Classes\AppDelegate.cpp" />
     <ClCompile Include="..\Classes\HelloWorldScene.cpp" />
     <ClCompile Include="..\Classes\MenuScreen.cpp" />
+    <ClCompile Include="..\Classes\PauseScene.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Classes\AppDelegate.h" />
     <ClInclude Include="..\Classes\HelloWorldScene.h" />
     <ClInclude Include="..\Classes\MenuScreen.h" />
+    <ClInclude Include="..\Classes\PauseScene.h" />
     <ClInclude Include="main.h" />
   </ItemGroup>
   <ItemGroup>

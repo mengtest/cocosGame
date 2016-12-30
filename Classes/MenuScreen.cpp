@@ -37,10 +37,10 @@ bool MenuScreen::init()
 
 	menuItems.pushBack(MenuItemLabel::create(startGame,
 		CC_CALLBACK_1(MenuScreen::startNewGame, this)));
-	
+
 	menuItems.pushBack(MenuItemLabel::create(endGame,
 		CC_CALLBACK_1(MenuScreen::menuCloseCallback, this)));
-	
+
 
 	auto menu = Menu::createWithArray(menuItems);
 	menu->alignItemsInColumns(1, 1);

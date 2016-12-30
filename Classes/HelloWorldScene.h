@@ -1,8 +1,11 @@
 #ifndef __HELLOWORLD_SCENE_H__
 #define __HELLOWORLD_SCENE_H__
 
+#define PAUSE_SCENE_TAG 99
+
 #include "cocos2d.h"
 #include "MenuScreen.h"
+#include "PauseScene.h"
 
 class HelloWorld : public cocos2d::LayerColor
 {
@@ -35,10 +38,16 @@ public:
 	void onTouchesEnded(const std::vector<cocos2d::Touch*>& pTouches, cocos2d::Event *pEvent);
 	void gameLogic(float);
 	void update(float);
+	void checkTouch();
 	void openMenu();
 	void spriteMoveFinished(cocos2d::CCNode*);
 	void onAcceleration(cocos2d::Acceleration *acc, cocos2d::Event *event);
 	void shoot();
+	void addKeyboardEventListener();
+	void addAccelarationEventListener();
+	void initArrays();
+	void initMenuButton();
+	void createPlayer();
     
     // a selector callback
 	void menuOpenMenuCallback(cocos2d::Ref* pSender);
