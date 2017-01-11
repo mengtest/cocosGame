@@ -16,6 +16,7 @@ public:
 	virtual bool init() override;
 
 	void menuCloseCallback(Ref* pSender);
+	void goToMainMenu(Ref* pSender);
 
 	void resumeGame();
 };

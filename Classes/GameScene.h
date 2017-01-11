@@ -7,57 +7,79 @@
 #include "MainMenuScene.h"
 #include "PauseScene.h"
 
-class GameScene : public cocos2d::LayerColor
+using namespace cocos2d;
+
+class GameScene : public LayerColor
 {
 public:
 	GameScene();
 	~GameScene();
-    static cocos2d::Scene* createScene();
-	cocos2d::Label* acceleration;
-	cocos2d::Label* label;
-	cocos2d::Sprite* player;
+    static Scene* createScene();
+	Label* acceleration;
+	Label* label;
+	Sprite* player;
+	int pixelSize = 5;
 	float eaterPointsPerSecX = 0;
 	float eaterPointsPerSecY = 0;
 	float startYOffset = 0;
 	float startXOffset = 0;
 	bool movementStarted = false;
 
+	int gunOffsetX = 102;
+	int gunOffsetY = 2;
+	int gunFireOffsetX = 100;
+	int gunFireOffsetY = 10;
+
+	int bulletOffsetX = 65;
+	int bulletOffsetY = 15;
+
 	bool wPressed = false;
 	bool sPressed = false;
 	bool aPressed = false;
 	bool dPressed = false;
 
-	float spawnEnemyFrequency = 0.4;
+	float spawnEnemyFrequency = 1;
 
-	int playerSpeed = 3;
+	float enemySpeed = 0.05;
+	float bulletSpeed = 0.005;
+
+	/*int playerSpeed = 4;*/
 
     virtual bool init();
 
 	//void realInit(cocos2d::CCNode*);
 	void addMonster();
-	void onTouchesEnded(const std::vector<cocos2d::Touch*>& pTouches, cocos2d::Event *pEvent);
+	void onTouchesEnded(const std::vector<Touch*>& pTouches, Event *pEvent);
 	void gameLogic(float);
+	void moveEnemies(float);
+	void moveBullets(float);
 	void update(float);
 	void checkTouch();
 	void openMenu();
-	void spriteMoveFinished(cocos2d::CCNode*);
-	void onAcceleration(cocos2d::Acceleration *acc, cocos2d::Event *event);
+	void spriteMoveFinished(CCNode*);
+	void onAcceleration(Acceleration *acc, Event *event);
 	void shoot();
 	void addKeyboardEventListener();
 	void addAccelarationEventListener();
 	void initArrays();
 	void initMenuButton();
 	void createPlayer();
+	void createGun();
+	void initMap();
+	void removeCorpse(CCSprite*);
     
     // a selector callback
-	void menuOpenMenuCallback(cocos2d::Ref* pSender);
-    void menuCloseCallback(cocos2d::Ref* pSender);
+	void menuOpenMenuCallback(Ref* pSender);
+    void menuCloseCallback(Ref* pSender);
     
     // implement the "static create()" method manually
 	CREATE_FUNC(GameScene);
 protected:
-	cocos2d::CCArray *_targets;
-	cocos2d::CCArray *_projectiles;
+	CCArray *_targets;
+	CCArray *_deadTargets;
+	CCArray *_projectiles;
+
+	Map<std::string, Sprite*> playerMap;
 };
 
 #endif // __GAME_SCENE_H__

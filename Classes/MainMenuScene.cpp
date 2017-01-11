@@ -29,10 +29,10 @@ bool MainMenuScene::init()
 	Vec2 origin = Director::getInstance()->getVisibleOrigin();
 	Vector<MenuItem*> menuItems;
 
-	auto startGame = Label::createWithTTF("New Game", "fonts/Marker Felt.ttf", 24);
+	auto startGame = Label::createWithTTF("New Game", "fonts/Marker Felt.ttf", 124);
 	startGame->setColor(Color3B(255, 255, 255));
 
-	auto endGame = Label::createWithTTF("Exit", "fonts/Marker Felt.ttf", 24);
+	auto endGame = Label::createWithTTF("Exit", "fonts/Marker Felt.ttf", 124);
 	endGame->setColor(Color3B(255, 255, 255));
 
 	menuItems.pushBack(MenuItemLabel::create(startGame,
@@ -54,6 +54,12 @@ bool MainMenuScene::init()
 		switch (keyCode){
 		case EventKeyboard::KeyCode::KEY_ESCAPE:
 			close();
+			break;
+		case EventKeyboard::KeyCode::KEY_BACKSPACE:
+			close();
+			break;
+		case EventKeyboard::KeyCode::KEY_ENTER:
+			startNewGame(this);
 			break;
 		}
 	};
