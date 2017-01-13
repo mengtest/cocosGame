@@ -6,6 +6,8 @@
 #include "cocos2d.h"
 #include "MainMenuScene.h"
 #include "PauseScene.h"
+#include "Monster.h"
+#include "ui/CocosGUI.h"
 
 using namespace cocos2d;
 
@@ -14,7 +16,7 @@ class GameScene : public LayerColor
 public:
 	GameScene();
 	~GameScene();
-    static Scene* createScene();
+	static Scene* createScene();
 	Label* acceleration;
 	Label* label;
 	Sprite* player;
@@ -30,7 +32,7 @@ public:
 	int gunFireOffsetX = 100;
 	int gunFireOffsetY = 10;
 
-	int bulletOffsetX = 65;
+	int bulletOffsetX = 35;
 	int bulletOffsetY = 15;
 
 	bool wPressed = false;
@@ -45,7 +47,7 @@ public:
 
 	/*int playerSpeed = 4;*/
 
-    virtual bool init();
+	virtual bool init();
 
 	//void realInit(cocos2d::CCNode*);
 	void addMonster();
@@ -66,13 +68,16 @@ public:
 	void createPlayer();
 	void createGun();
 	void initMap();
-	void removeCorpse(CCSprite*);
-    
-    // a selector callback
+	void removeCorpse(Sprite*);
+	void restoreEnemy(Sprite*);
+
+	ui::Button* uButton;
+
+	// a selector callback
 	void menuOpenMenuCallback(Ref* pSender);
-    void menuCloseCallback(Ref* pSender);
-    
-    // implement the "static create()" method manually
+	void menuCloseCallback(Ref* pSender);
+
+	// implement the "static create()" method manually
 	CREATE_FUNC(GameScene);
 protected:
 	CCArray *_targets;

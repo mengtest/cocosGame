@@ -7,10 +7,10 @@ GameScene::GameScene() : _targets(NULL), _projectiles(NULL), _deadTargets(NULL) 
 
 Scene* GameScene::createScene()
 {
-    auto scene = Scene::create();
+	auto scene = Scene::create();
 	auto layer = GameScene::create();
-    scene->addChild(layer);
-    return scene;
+	scene->addChild(layer);
+	return scene;
 }
 
 GameScene::~GameScene()
@@ -60,11 +60,11 @@ bool GameScene::init()
 	//acceleration->setPosition(Vec2(acceleration->getContentSize().width, 2 * acceleration->getContentSize().height));
 	//this->addChild(acceleration, 1, "acceleration");
 
-    return true;
+	return true;
 }
 
 void GameScene::initMap() {
-	cocos2d::Sprite* back = Sprite::create("images/map/map.jpg");
+	cocos2d::Sprite* back = Sprite::create("images/map/map.png");
 	back->setAnchorPoint(Vec2(0, 0));
 	back->setPosition(Vec2(0, 0));
 	this->addChild(back, 0, "back");
@@ -161,6 +161,7 @@ void GameScene::initMenuButton() {
 	auto menu = Menu::create(menuButton, NULL);
 	menu->setPosition(Vec2::ZERO);
 	this->addChild(menu, 40, "menuButton");
+
 }
 
 void GameScene::initArrays() {
@@ -208,30 +209,30 @@ void GameScene::addKeyboardEventListener() {
 			sPressed = true;
 			wPressed = false;
 			break;
-		//case EventKeyboard::KeyCode::KEY_A:
-		//	newPosX = player->getPosition().x - pixelSize;
-		//	player->setPositionX(newPosX);
-		//	CCLOG("player->getPosition().x = %f", player->getPosition().x);
-		//	CCLOG("player->getPosition().y = %f", player->getPosition().y);
-		//	break;
-		//case EventKeyboard::KeyCode::KEY_D:
-		//	newPosX = player->getPosition().x + pixelSize;
-		//	player->setPositionX(newPosX);
-		//	CCLOG("player->getPosition().x = %f", player->getPosition().x);
-		//	CCLOG("player->getPosition().y = %f", player->getPosition().y);
-		//	break;
-		//case EventKeyboard::KeyCode::KEY_W:
-		//	newPosY = player->getPosition().y + pixelSize;
-		//	player->setPositionY(newPosY);
-		//	CCLOG("player->getPosition().x = %f", player->getPosition().x);
-		//	CCLOG("player->getPosition().y = %f", player->getPosition().y);
-		//	break;
-		//case EventKeyboard::KeyCode::KEY_S:
-		//	newPosY = player->getPosition().y - pixelSize;
-		//	player->setPositionY(newPosY);
-		//	CCLOG("player->getPosition().x = %f", player->getPosition().x);
-		//	CCLOG("player->getPosition().y = %f", player->getPosition().y);
-		//	break;
+			//case EventKeyboard::KeyCode::KEY_A:
+			//	newPosX = player->getPosition().x - pixelSize;
+			//	player->setPositionX(newPosX);
+			//	CCLOG("player->getPosition().x = %f", player->getPosition().x);
+			//	CCLOG("player->getPosition().y = %f", player->getPosition().y);
+			//	break;
+			//case EventKeyboard::KeyCode::KEY_D:
+			//	newPosX = player->getPosition().x + pixelSize;
+			//	player->setPositionX(newPosX);
+			//	CCLOG("player->getPosition().x = %f", player->getPosition().x);
+			//	CCLOG("player->getPosition().y = %f", player->getPosition().y);
+			//	break;
+			//case EventKeyboard::KeyCode::KEY_W:
+			//	newPosY = player->getPosition().y + pixelSize;
+			//	player->setPositionY(newPosY);
+			//	CCLOG("player->getPosition().x = %f", player->getPosition().x);
+			//	CCLOG("player->getPosition().y = %f", player->getPosition().y);
+			//	break;
+			//case EventKeyboard::KeyCode::KEY_S:
+			//	newPosY = player->getPosition().y - pixelSize;
+			//	player->setPositionY(newPosY);
+			//	CCLOG("player->getPosition().x = %f", player->getPosition().x);
+			//	CCLOG("player->getPosition().y = %f", player->getPosition().y);
+			//	break;
 		}
 	};
 
@@ -310,7 +311,7 @@ void GameScene::shoot() {
 	auto gunFire = CCSprite::create("images/player/gun/fire.png");
 	gunFire->setPosition(playerMap.at("gun")->getPosition().x + gunFireOffsetX, playerMap.at("gun")->getPosition().y + gunFireOffsetY);
 	this->addChild(gunFire, 2, "gunFire");
-	auto action = Sequence::create(DelayTime::create(0.1), CallFunc::create(std::bind(&GameScene::removeCorpse, this, gunFire)), NULL);
+	auto action = Sequence::create(DelayTime::create(0.07), CallFunc::create(std::bind(&GameScene::removeCorpse, this, gunFire)), NULL);
 	this->runAction(action);
 
 	//int realX = winSize.width + (projectile->getContentSize().width / 2);
@@ -332,21 +333,24 @@ void GameScene::addMonster(){
 
 	CCSize winSize = CCDirector::sharedDirector()->getWinSize();
 	CCSprite *monster = CCSprite::create("images/mobs/demon.png");
+	CCSprite *monster_shadow = CCSprite::create("images/mobs/demon_shadow.png");
 
-	//Vector<SpriteFrame*> animFrames;
-	//animFrames.reserve(2);
+	Vector<SpriteFrame*> animFrames;
+	animFrames.reserve(2);
 
-	//animFrames.pushBack(SpriteFrame::create("images/mobs/demon.png", Rect(0, 0, 125, 125)));
-	//animFrames.pushBack(SpriteFrame::create("images/mobs/demon.png", Rect(0, 0, 125, 125)));
+	animFrames.pushBack(SpriteFrame::create("images/mobs/walk/1.png", Rect(0, 0, 125, 125)));
+	animFrames.pushBack(SpriteFrame::create("images/mobs/walk/2.png", Rect(0, 0, 125, 125)));
+	animFrames.pushBack(SpriteFrame::create("images/mobs/walk/3.png", Rect(0, 0, 125, 125)));
+	animFrames.pushBack(SpriteFrame::create("images/mobs/walk/4.png", Rect(0, 0, 125, 125)));
 
-	//// create the animation out of the frames
-	//Animation* animation = Animation::createWithSpriteFrames(animFrames, 0.2f);
-	//Animate* animate = Animate::create(animation);
+	// create the animation out of the frames
+	Animation* animation = Animation::createWithSpriteFrames(animFrames, 0.28f);
+	Animate* animate = Animate::create(animation);
 
-	//// run it and repeat it forever
-	//monster -> runAction(RepeatForever::create(animate));
-
-	monster -> setScale(1);
+	// run it and repeat it forever
+	monster -> runAction(RepeatForever::create(animate));
+	
+	monster->setScale(1);
 
 	//CCSprite* monster = CCSprite::create("player.png");
 
@@ -369,13 +373,19 @@ void GameScene::addMonster(){
 
 	// создаем монстров немного за экраном по правому краю и в случайной позиции Y,
 	// рассчитанной выше
-	monster->setPosition(ccp(winSize.width + monsterWidth / 2, actualY));
+	monster->setPosition(Vec2(winSize.width + monsterWidth / 2, actualY));
+	monster_shadow->setPosition(Vec2(monster->getPositionX(), monster->getPositionY()));
 
 	monster->setTag(1);
-	_targets->addObject(monster);
 
+	Monster *monsterObj = new Monster();
+	monsterObj->spritesMap.insert("monster", monster);
+	monsterObj->spritesMap.insert("monster_shadow", monster_shadow);
+	_targets->addObject(monsterObj);
 
+	this->addChild(monster_shadow, 1);
 	this->addChild(monster, 1);
+	
 
 	// считаем скорость монстров
 	int minDuration = 12;
@@ -409,8 +419,12 @@ void GameScene::moveEnemies(float dt){
 	CCObject* jt = NULL;
 	CCARRAY_FOREACH(_targets, jt)
 	{
-		CCSprite *target = dynamic_cast<CCSprite*>(jt);
-		target->setPositionX(target->getPosition().x - pixelSize);
+		Monster *currentMonster = dynamic_cast<Monster*>(jt);
+		
+		for ( auto key : currentMonster->spritesMap.keys() ) {
+			CCSprite *target = currentMonster->spritesMap.at(key);
+			target->setPositionX(target->getPosition().x - pixelSize);
+		}
 	}
 }
 
@@ -438,13 +452,15 @@ void GameScene::update(float dt)
 		int intDiffY = 0;
 		if (diffX < 0) {
 			intDiffX = int((diffX - 4) / pixelSize);
-		} else {
+		}
+		else {
 			intDiffX = int((diffX + 4) / pixelSize);
 		}
 		intDiffX *= pixelSize;
 		if (diffY < 0) {
 			intDiffY = int((diffY - 4) / pixelSize);
-		} else {
+		}
+		else {
 			intDiffY = int((diffY + 4) / pixelSize);
 		}
 		intDiffY *= pixelSize;
@@ -496,54 +512,95 @@ void GameScene::update(float dt)
 
 		CCARRAY_FOREACH(_targets, jt)
 		{
-			CCSprite *target = dynamic_cast<CCSprite*>(jt);
+			Monster *currentMonster = dynamic_cast<Monster*>(jt);
+			CCSprite *target = currentMonster->spritesMap.at("monster");
 			CCRect targetRect = CCRectMake(
-				target->getPosition().x - (target->getContentSize().width / 2),
-				target->getPosition().y - (target->getContentSize().height / 2),
-				target->getContentSize().width,
-				target->getContentSize().height);
+				target->getPosition().x - (target->getContentSize().width / 2) + 100,
+				target->getPosition().y - (target->getContentSize().height / 2) + 50,
+				target->getContentSize().width - 100,
+				target->getContentSize().height - 100);
 
 			if (projectileRect.intersectsRect(targetRect))
 			{
-				targetsToDelete->addObject(target);
+				targetsToDelete->addObject(currentMonster);
 				projectilesToDelete->addObject(projectile);
 			}
 		}
 	}
 
+
 	CCARRAY_FOREACH(targetsToDelete, jt)
 	{
-		CCSprite *target = dynamic_cast<CCSprite*>(jt);
-		//_deadTargets->addObject(target);
-		_targets->removeObject(target);
-		//this->removeChild(target, true);
-		int temp = cocos2d::RandomHelper::random_int(0, 1);
-		if (temp) {
-			target->setTexture("images/mobs/demon_dead.png");
+		Monster *currentMonster = dynamic_cast<Monster*>(jt);
+		currentMonster->hitsToShot--;
+		CCSprite *target = currentMonster->spritesMap.at("monster");
+		if (currentMonster->hitsToShot < 1) {
+			CCSprite *monster_shadow = currentMonster->spritesMap.at("monster_shadow");
+			//CCArray* targets = CCArray::create();
+
+			for (auto key : currentMonster->spritesMap.keys()) {
+				auto action = Sequence::create(DelayTime::create(2), CallFunc::create(std::bind(&GameScene::removeCorpse, this, currentMonster->spritesMap.at(key))), NULL);
+				this->runAction(action);
+			}
+
+			//_deadTargets->addObject(target);
+			_targets->removeObject(currentMonster);
+			//this->removeChild(target, true);
+			int temp = cocos2d::RandomHelper::random_int(0, 1);
+			if (temp) {
+				target->setTexture("images/mobs/demon_dead.png");
+			}
+			else {
+				target->setTexture("images/mobs/demon_dead_2.png");
+			}
+
+			target->stopAllActions();
+
+
+			//sprite1pos = CGPoint.ccp((winSize.width / 2 + winSize.width / 2), 0);
+
+			//now the bezier config declaration
+
+
+			auto jump = JumpBy::create(0.5, Vec2(20, 0), 30, 1);
+
+			auto seq = Sequence::create(jump, nullptr);
+
+
+			CCFiniteTimeAction* actionMove1 =
+				CCMoveTo::create((float)1,
+				ccp(target->getPosition().x + 30, target->getPosition().y));
+			CCFiniteTimeAction* actionMove2 =
+				CCMoveTo::create((float)1,
+				ccp(target->getPosition().x + 30, target->getPosition().y));
+			CCFiniteTimeAction* actionMove3 =
+				CCMoveTo::create((float)0.5,
+				ccp(target->getPosition().x + 30, target->getPosition().y));
+			if (temp) {
+				target->runAction(seq);
+				monster_shadow->runAction(actionMove3);
+			}
+			else {
+				target->runAction(actionMove1);
+				monster_shadow->runAction(actionMove2);
+			}
+
+			auto fadeOutAction1 = FadeOut::create(1.0f);
+			auto fadeOutAction2 = FadeOut::create(1.0f);
+			/*auto fadeOut = Sequence::create(DelayTime::create(1), CallFunc::create(std::bind(&FadeOut::create, this, 1.0f)), NULL);*/
+			auto fadeOut1 = Sequence::create(DelayTime::create(1), fadeOutAction1, NULL);
+			auto fadeOut2 = Sequence::create(DelayTime::create(1), fadeOutAction2, NULL);
+			////auto fadeOut = FadeOut::create(2.0f);
+
+			target->runAction(fadeOut1);
+			monster_shadow->runAction(fadeOut2);
 		}
 		else {
-			target->setTexture("images/mobs/demon_dead_2.png");
+			//target->setTexture("images/mobs/demon_dead.png");
+			target->setColor(ccc3(0,0,0));
+			auto action = Sequence::create(DelayTime::create(0.1), CallFunc::create(std::bind(&GameScene::restoreEnemy, this, target)), NULL);
+			this->runAction(action);
 		}
-		
-
-		//Sequence *seq = Sequence::create(DelayTime::create(randomDelay), CallFunc::create(std::bind(&GamePlayScene::createObstacles, this, obstacleSprite)), NULL);
-
-		auto action = Sequence::create(DelayTime::create(2), CallFunc::create(std::bind(&GameScene::removeCorpse, this, target)), NULL);
-		
-
-		this->runAction(action);
-
-		CCFiniteTimeAction* actionMove =
-			CCMoveTo::create((float)1,
-			ccp(target->getPosition().x + 30, target->getPosition().y));
-
-		target->runAction(actionMove);
-
-		auto fadeOutAction = FadeOut::create(1.0f);
-		/*auto fadeOut = Sequence::create(DelayTime::create(1), CallFunc::create(std::bind(&FadeOut::create, this, 1.0f)), NULL);*/
-		auto fadeOut = Sequence::create(DelayTime::create(1), fadeOutAction, NULL);
-		////auto fadeOut = FadeOut::create(2.0f);
-		target->runAction(fadeOut);
 	}
 
 	CCARRAY_FOREACH(projectilesToDelete, it)
@@ -555,65 +612,85 @@ void GameScene::update(float dt)
 
 	projectilesToDelete->release();
 	targetsToDelete->release();
-}
 
-void GameScene::removeCorpse(CCSprite* target) {
-	this->removeChild(target, true);
-}
 
-void GameScene::checkTouch() {
-	if ( ! this->isTouchEnabled() ) {
-		this->setTouchEnabled(true);
-		// shit
-		Director::getInstance()->getEventDispatcher()->resumeEventListenersForTarget(this->getChildByName("menuButton"));
-		addKeyboardEventListener();
-		addAccelarationEventListener();
+	CCARRAY_FOREACH(_targets, it) {
+		Monster *currentMonster = dynamic_cast<Monster*>(it);
+		CCSprite *target = currentMonster->spritesMap.at("monster");
+		if (currentMonster->spritesMap.at("monster")->getPositionX() < 0) {
+			CCSprite *monster_shadow = currentMonster->spritesMap.at("monster_shadow");
+			//CCArray* targets = CCArray::create();
+
+			for (auto key : currentMonster->spritesMap.keys()) {
+				removeCorpse(currentMonster->spritesMap.at(key));
+			}
+
+			_targets->removeObject(currentMonster);
+		}
 	}
+	CCARRAY_FOREACH(_projectiles, it) {
+		if (it == NULL) {
+			CCLOG("1");
+		}
+		else {
+			Sprite *bullet = dynamic_cast<CCSprite*>(it);
+			if (bullet->getPositionX() > winSize.width + bullet->getContentSize().width) {
+				_projectiles->removeObject(bullet);
+				this->removeChild(bullet);
+			}
+		}
+	}
+}
+
+void GameScene::restoreEnemy(Sprite* target) {
+	target->setColor(ccc3(255, 255, 255));
+}
+
+void GameScene::removeCorpse(Sprite* target) {
+	this->removeChild(target, true);
 }
 
 void GameScene::spriteMoveFinished(CCNode* sender)
 {
-	CCSprite *sprite = (CCSprite *)sender;
-	this -> removeChild(sprite, true);
 
-	if (sprite->getTag() == 1)  // target
-	{
-		_targets->removeObject(sprite, true);
-	}
-	else if (sprite->getTag() == 2) // projectile
-	{
-		_projectiles->removeObject(sprite, true);
-	}
 }
 
 void GameScene::menuOpenMenuCallback(Ref* pSender) {
 	openMenu();
 }
 
+void GameScene::checkTouch() {
+	if (!this->isTouchEnabled()) {
+		this->setTouchEnabled(true);
+		this->_eventDispatcher->resumeEventListenersForTarget(this->getChildByName("menuButton"));
+		this->_eventDispatcher->resumeEventListenersForTarget(this->getChildByName("player"));
+		this->setKeyboardEnabled(true);
+		removeChildByTag(PAUSE_SCENE_TAG);
+	}
+}
+
 void GameScene::openMenu() {
 	Director::getInstance()->pause();
-	Director::getInstance()->getEventDispatcher()->pauseEventListenersForTarget(this->getChildByName("menuButton"));
-	Director::getInstance()->getEventDispatcher()->pauseEventListenersForTarget(this->getChildByName("player"));
 	this->setTouchEnabled(false);
 	this->setKeyboardEnabled(false);
-	//this->_eventDispatcher->removeAllEventListeners();
+	this->_eventDispatcher->pauseEventListenersForTarget(this->getChildByName("menuButton"));
+	this->_eventDispatcher->pauseEventListenersForTarget(this->getChildByName("player"));
 	auto scene = PauseScene::createScene();
 	scene->setTag(PAUSE_SCENE_TAG);
 	addChild(scene, 50);
-	//Director::getInstance()->replaceScene(scene);
 }
 
 void GameScene::menuCloseCallback(Ref* pSender)
 {
-    //Close the cocos2d-x game scene and quit the application
-    Director::getInstance()->end();
+	//Close the cocos2d-x game scene and quit the application
+	Director::getInstance()->end();
 
-    #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-    exit(0);
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+	exit(0);
 #endif
-    
-    /*To navigate back to native iOS screen(if present) without quitting the application  ,do not use Director::getInstance()->end() and exit(0) as given above,instead trigger a custom event created in RootViewController.mm as below*/
-    
-    //EventCustom customEndEvent("game_scene_close_event");
-    //_eventDispatcher->dispatchEvent(&customEndEvent);
+
+	/*To navigate back to native iOS screen(if present) without quitting the application  ,do not use Director::getInstance()->end() and exit(0) as given above,instead trigger a custom event created in RootViewController.mm as below*/
+
+	//EventCustom customEndEvent("game_scene_close_event");
+	//_eventDispatcher->dispatchEvent(&customEndEvent);
 }

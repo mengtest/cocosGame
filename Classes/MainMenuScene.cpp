@@ -27,6 +27,12 @@ bool MainMenuScene::init()
 
 	auto visibleSize = Director::getInstance()->getVisibleSize();
 	Vec2 origin = Director::getInstance()->getVisibleOrigin();
+
+	cocos2d::Sprite* back = Sprite::create("images/map/background_menu.png");
+	back->setAnchorPoint(Vec2(0, 0));
+	back->setPosition(Vec2(0, 0));
+	this->addChild(back, 0, "back");
+
 	Vector<MenuItem*> menuItems;
 
 	auto startGame = Label::createWithTTF("New Game", "fonts/Marker Felt.ttf", 124);
