@@ -11,5 +11,9 @@ public:
 	Map<std::string, Sprite*> spritesMap;
 
 	int hitsToShot = 3;
+	int hitBoxXOffset = 100;
+	int hitBoxYOffset = 50;
+
+	std::string getDeadTexture();
 };
 
