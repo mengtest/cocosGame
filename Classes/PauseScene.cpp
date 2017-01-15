@@ -59,6 +59,7 @@ bool PauseScene::init()
 
 	this->_eventDispatcher->addEventListenerWithSceneGraphPriority(eventListener, menu);
 
+	return true;
 }
 
 void PauseScene::menuCloseCallback(Ref* pSender)

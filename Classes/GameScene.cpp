@@ -33,7 +33,7 @@ bool GameScene::init()
 		return false;
 	}
 
-	winSize = CCDirector::sharedDirector()->getWinSize();
+	winSize = Director::getInstance()->getWinSize();
 
 	initArrays();
 	initMenuButton();
@@ -88,7 +88,7 @@ void GameScene::initMap() {
 	cocos2d::Sprite* shadow = Sprite::create("images/map/shadow.png");
 	shadow->setAnchorPoint(Vec2(0, 0));
 	shadow->setPosition(Vec2(0, 0));
-	this->addChild(shadow, 10, "shadow");
+	this->addChild(shadow, 20, "shadow");
 }
 
 void GameScene::createPlayer() {
@@ -120,8 +120,8 @@ void GameScene::createPlayer() {
 	hero_shadow->setPosition(Vec2(playerMap.at("player")->getPosition().x, playerMap.at("player")->getPosition().y));
 	playerMap.insert("hero_shadow", hero_shadow);
 
-	this->addChild(playerMap.at("hero_shadow"), 2, "hero_shadow");
-	this->addChild(playerMap.at("player"), 3, "player");
+	this->addChild(playerMap.at("hero_shadow"), 16, "hero_shadow");
+	this->addChild(playerMap.at("player"), 17, "player");
 }
 
 void GameScene::createGun() {
@@ -143,7 +143,7 @@ void GameScene::createGun() {
 	std::string mapKey0 = "gun";
 	playerMap.insert(mapKey0, gun);
 
-	this->addChild(playerMap.at("gun"), 3, "gun");
+	this->addChild(playerMap.at("gun"), 17, "gun");
 }
 
 void GameScene::addKeyboardEventListener() {
@@ -236,9 +236,10 @@ void GameScene::onAcceleration(cocos2d::Acceleration *acc, cocos2d::Event *event
 
 	Director *director = Director::getInstance();
 	float minSize = MIN(winSize.width, winSize.height);
-	if (!movementStarted) {
+	if (!movementStarted || acceleratorOffsetUpdateRequired) {
 		startYOffset = acc->y;
 		startXOffset = acc->x;
+		acceleratorOffsetUpdateRequired = false;
 	}
 	double targetSpeedY = (acc->y - startYOffset) * minSize * 2;
 	double targetSpeedX = (acc->x - startXOffset) * minSize * 2;
@@ -259,18 +260,18 @@ void GameScene::onTouchesEnded(const std::vector<cocos2d::Touch *> &touches, coc
 
 void GameScene::shoot() {
 	
-	CCSprite *bullet = CCSprite::create("images/bullet.png");
+	Sprite *bullet = Sprite::create("images/bullet.png");
 	int posX = floorToPixelSize(playerMap.at("gun")->getPositionX() + bulletOffsetX);
 	int posY = floorToPixelSize(playerMap.at("gun")->getPositionY() + bulletOffsetY);
-	bullet->setPosition(ccp(posX, posY));
+	bullet->setPosition(Vec2(posX, posY));
 	bullet->setTag(2);
 	_bullets->addObject(bullet);
-	this->addChild(bullet, 2);
+	this->addChild(bullet, 13);
 
-	auto gunFire = CCSprite::create("images/player/gun/fire.png");
+	auto gunFire = Sprite::create("images/player/gun/fire.png");
 	gunFire->setPosition(playerMap.at("gun")->getPosition().x + gunFireOffsetX, playerMap.at("gun")->getPosition().y + gunFireOffsetY);
-	this->addChild(gunFire, 2, "gunFire");
-	auto action = Sequence::create(DelayTime::create(0.07), CallFunc::create(std::bind(&GameScene::removeCorpse, this, gunFire)), NULL);
+	this->addChild(gunFire, 17, "gunFire");
+	auto action = Sequence::create(DelayTime::create(0.07f), CallFunc::create(std::bind(&GameScene::removeCorpse, this, gunFire)), NULL);
 	this->runAction(action);
 }
 
@@ -296,15 +297,15 @@ void GameScene::addMonster(){
 	actualY += 2;
 	int actualX = floorToPixelSize(winSize.width + monsterWidth / 2);
 	actualX += 2;
-	monster->setPosition(Vec2(winSize.width + monsterWidth / 2, actualY));
+	monster->setPosition(Vec2(actualX, actualY));
 	monster_shadow->setPosition(Vec2(monster->getPositionX(), monster->getPositionY()));
 	monster->setTag(1);
 	Monster *monsterObj = new Monster();
 	monsterObj->spritesMap.insert("monster", monster);
 	monsterObj->spritesMap.insert("monster_shadow", monster_shadow);
 	_targets->addObject(monsterObj);
-	this->addChild(monster_shadow, 1);
-	this->addChild(monster, 1);
+	this->addChild(monster_shadow, 10);
+	this->addChild(monster, 10);
 }
 
 void GameScene::gameLogic(float dt){
@@ -312,22 +313,24 @@ void GameScene::gameLogic(float dt){
 }
 
 void GameScene::moveEnemies(float dt){
-	CCObject* jt = NULL;
+	Ref* jt = NULL;
 	CCARRAY_FOREACH(_targets, jt)
 	{
 		Monster *currentMonster = dynamic_cast<Monster*>(jt);	
-		for ( auto key : currentMonster->spritesMap.keys() ) {
-			CCSprite *target = currentMonster->spritesMap.at(key);
-			target->setPositionX(target->getPosition().x - pixelSize);
+		if (!currentMonster->dead) {
+			for (auto key : currentMonster->spritesMap.keys()) {
+				Sprite *target = currentMonster->spritesMap.at(key);
+				target->setPositionX(target->getPosition().x - pixelSize);
+			}
 		}
 	}
 }
 
 void GameScene::moveBullets(float dt){
-	CCObject* jt = NULL;
+	Ref* jt = NULL;
 	CCARRAY_FOREACH(_bullets, jt)
 	{
-		CCSprite *target = dynamic_cast<CCSprite*>(jt);
+		Sprite *target = dynamic_cast<Sprite*>(jt);
 		target->setPositionX(target->getPosition().x + pixelSize);
 	}
 }
@@ -387,17 +390,17 @@ void GameScene::movePlayer(float dt) {
 
 void GameScene::checkIntersections() {
 
-	CCArray *bulletsToDelete = CCArray::create();
+	__Array *bulletsToDelete = __Array::create();
 	bulletsToDelete->retain();
-	CCArray* targetsToDelete = CCArray::create();
+	__Array* targetsToDelete = __Array::create();
 	targetsToDelete->retain();
-	CCObject* it = NULL;
-	CCObject* jt = NULL;
+	Ref* it = NULL;
+	Ref* jt = NULL;
 
 	CCARRAY_FOREACH(_bullets, it)
 	{
-		CCSprite *projectile = dynamic_cast<CCSprite*>(it);
-		CCRect projectileRect = CCRectMake(
+		Sprite *projectile = dynamic_cast<Sprite*>(it);
+		Rect projectileRect = Rect(
 			projectile->getPosition().x - (projectile->getContentSize().width / 2),
 			projectile->getPosition().y - (projectile->getContentSize().height / 2),
 			projectile->getContentSize().width,
@@ -406,17 +409,19 @@ void GameScene::checkIntersections() {
 		CCARRAY_FOREACH(_targets, jt)
 		{
 			Monster *currentMonster = dynamic_cast<Monster*>(jt);
-			CCSprite *target = currentMonster->spritesMap.at("monster");
-			CCRect targetRect = CCRectMake(
-				target->getPosition().x - (target->getContentSize().width / 2) + currentMonster->hitBoxXOffset,
-				target->getPosition().y - (target->getContentSize().height / 2) + currentMonster->hitBoxYOffset,
-				target->getContentSize().width - currentMonster->hitBoxXOffset,
-				target->getContentSize().height - 2 * currentMonster->hitBoxYOffset);
+			if (!currentMonster->dead) {
+				Sprite *target = currentMonster->spritesMap.at("monster");
+				Rect targetRect = Rect(
+					target->getPosition().x - (target->getContentSize().width / 2) + currentMonster->hitBoxXOffset,
+					target->getPosition().y - (target->getContentSize().height / 2) + currentMonster->hitBoxYOffset,
+					target->getContentSize().width - currentMonster->hitBoxXOffset,
+					target->getContentSize().height - 2 * currentMonster->hitBoxYOffset);
 
-			if (projectileRect.intersectsRect(targetRect))
-			{
-				targetsToDelete->addObject(currentMonster);
-				bulletsToDelete->addObject(projectile);
+				if (projectileRect.intersectsRect(targetRect))
+				{
+					targetsToDelete->addObject(currentMonster);
+					bulletsToDelete->addObject(projectile);
+				}
 			}
 		}
 	}
@@ -425,37 +430,74 @@ void GameScene::checkIntersections() {
 	{
 		Monster *currentMonster = dynamic_cast<Monster*>(jt);
 		currentMonster->hitsToShot--;
-		CCSprite *target = currentMonster->spritesMap.at("monster");
+		Sprite *target = currentMonster->spritesMap.at("monster");
 		if (currentMonster->hitsToShot < 1) {
-			CCSprite *monster_shadow = currentMonster->spritesMap.at("monster_shadow");
 
-			for (auto key : currentMonster->spritesMap.keys()) {
-				auto action = Sequence::create(DelayTime::create(2), CallFunc::create(std::bind(&GameScene::removeCorpse, this, currentMonster->spritesMap.at(key))), NULL);
-				this->runAction(action);
-			}
+			Sprite *monster_blood = Sprite::create("images/mobs/blood/1.png");
+			Vector<SpriteFrame*> animFrames;
+			animFrames.reserve(2);
+			animFrames.pushBack(SpriteFrame::create("images/mobs/blood/1.png", Rect(0, 0, 175, 125)));
+			animFrames.pushBack(SpriteFrame::create("images/mobs/blood/2.png", Rect(0, 0, 175, 125)));
+			animFrames.pushBack(SpriteFrame::create("images/mobs/blood/3.png", Rect(0, 0, 175, 125)));
+			animFrames.pushBack(SpriteFrame::create("images/mobs/blood/4.png", Rect(0, 0, 175, 125)));
+			animFrames.pushBack(SpriteFrame::create("images/mobs/blood/5.png", Rect(0, 0, 175, 125)));
+			Animation* animation = Animation::createWithSpriteFrames(animFrames, 0.14f);
+			Animate* animate = Animate::create(animation);
+			monster_blood->runAction(Repeat::create(animate, 1));
+			monster_blood->setPosition(Vec2(floorToPixelSize(currentMonster->spritesMap.at("monster")->getPositionX() - 50) + 3,
+				floorToPixelSize(currentMonster->spritesMap.at("monster")->getPositionY()) + 2));
 
-			_targets->removeObject(currentMonster);
+			currentMonster->spritesMap.insert("monster_blood", monster_blood);
 
-			target->setTexture(currentMonster->getDeadTexture());
+			this->addChild(monster_blood, 9);
+
+			//Sprite *monster_shadow = currentMonster->spritesMap.at("monster_shadow");
+			//for (auto key : currentMonster->spritesMap.keys()) {
+			//	auto action = Sequence::create(DelayTime::create(2), CallFunc::create(std::bind(&GameScene::removeCorpse, this, currentMonster->spritesMap.at(key))), NULL);
+			//	this->runAction(action);
+			//}
+
+			currentMonster->dead = true;
+			auto removeAction = Sequence::create(DelayTime::create(4), CallFunc::create(std::bind(&GameScene::removeDeadMonster, this, currentMonster)), NULL);
+			this->runAction(removeAction);
+			auto fadeAction = Sequence::create(DelayTime::create(2), CallFunc::create(std::bind(&GameScene::fadeHideMonster, this, currentMonster)), NULL);
+			this->runAction(fadeAction);
+
+			Vector<SpriteFrame*> animFrames2;
+			animFrames2.reserve(2);
+			animFrames2.pushBack(SpriteFrame::create("images/mobs/walk/1.png", Rect(0, 0, 125, 125)));
+			animFrames2.pushBack(SpriteFrame::create("images/mobs/walk/2.png", Rect(0, 0, 125, 125)));
+			animFrames2.pushBack(SpriteFrame::create("images/mobs/walk/3.png", Rect(0, 0, 125, 125)));
+			animFrames2.pushBack(SpriteFrame::create("images/mobs/demon_dead_2.png", Rect(0, 0, 154, 125)));
+			Animation* animation2 = Animation::createWithSpriteFrames(animFrames2, 0.14f);
+			Animate* animate2 = Animate::create(animation2);
+			
+			//target->setTexture(currentMonster->getDeadTexture());
+
 
 			target->stopAllActions();
+			//monster_blood->setPosition(Vec2(currentMonster->spritesMap.at("monster")->getPositionX(),
+			//	currentMonster->spritesMap.at("monster")->getPositionY()));	
+			target->runAction(Repeat::create(animate2, 1));
 
-			runFadeActionForSprite(1.0f, target);
-			runFadeActionForSprite(1.0f, monster_shadow);
 
+
+			//_targets->removeObject(currentMonster);
+
+			//runFadeActionForSprite(1.0f, target);
+			//runFadeActionForSprite(1.0f, monster_shadow);
+			onDamageReceived(target);
 		}
 		else {
-			target->setColor(ccc3(0, 0, 0));
-			auto action = Sequence::create(DelayTime::create(0.1), CallFunc::create(std::bind(&GameScene::restoreEnemy, this, target)), NULL);
-			this->runAction(action);
+			onDamageReceived(target);
 		}
 	}
 
 	CCARRAY_FOREACH(bulletsToDelete, it)
 	{
-		CCSprite* projectile = dynamic_cast<CCSprite*>(it);
-		_bullets->removeObject(projectile);
-		this->removeChild(projectile, true);
+		Sprite* bullet = dynamic_cast<Sprite*>(it);
+		_bullets->removeObject(bullet);
+		this->removeChild(bullet, true);
 	}
 
 	bulletsToDelete->release();
@@ -463,24 +505,28 @@ void GameScene::checkIntersections() {
 
 	CCARRAY_FOREACH(_targets, it) {
 		Monster *currentMonster = dynamic_cast<Monster*>(it);
-		CCSprite *target = currentMonster->spritesMap.at("monster");
+		Sprite *target = currentMonster->spritesMap.at("monster");
 		if (currentMonster->spritesMap.at("monster")->getPositionX() < 0) {
-			CCSprite *monster_shadow = currentMonster->spritesMap.at("monster_shadow");
-
+			Sprite *monster_shadow = currentMonster->spritesMap.at("monster_shadow");
 			for (auto key : currentMonster->spritesMap.keys()) {
 				removeCorpse(currentMonster->spritesMap.at(key));
 			}
-
 			_targets->removeObject(currentMonster);
 		}
 	}
 
 	CCARRAY_FOREACH(_bullets, it) {
-		Sprite *bullet = dynamic_cast<CCSprite*>(it);
+		Sprite *bullet = dynamic_cast<Sprite*>(it);
 		if (bullet->getPositionX() > winSize.width + bullet->getContentSize().width) {
 			_bullets->removeObject(bullet);
 			this->removeChild(bullet);
 		}
+	}
+}
+
+void GameScene::fadeHideMonster(Monster* monster) {
+	for (auto key : monster->spritesMap.keys()) {
+		runFadeActionForSprite(1.0f, monster->spritesMap.at(key));
 	}
 }
 
@@ -491,12 +537,25 @@ void GameScene::update(float dt)
 	checkIntersections();
 }
 
+void GameScene::onDamageReceived(Sprite* target) {
+	target->setColor(Color3B(0, 0, 0));
+	auto action = Sequence::create(DelayTime::create(0.1f), CallFunc::create(std::bind(&GameScene::restoreEnemy, this, target)), NULL);
+	this->runAction(action);
+}
+
 void GameScene::restoreEnemy(Sprite* target) {
-	target->setColor(ccc3(255, 255, 255));
+	target->setColor(Color3B(255, 255, 255));
 }
 
 void GameScene::removeCorpse(Sprite* target) {
 	this->removeChild(target, true);
+}
+
+void GameScene::removeDeadMonster(Monster* monster) {
+	for (auto key : monster->spritesMap.keys()) {
+		removeCorpse(monster->spritesMap.at(key));
+	}
+	_targets->removeObject(monster);
 }
 
 void GameScene::menuOpenMenuCallback(Ref* pSender) {
@@ -506,8 +565,8 @@ void GameScene::menuOpenMenuCallback(Ref* pSender) {
 void GameScene::checkTouch() {
 
 	if (!this->isTouchEnabled()) {
+		acceleratorOffsetUpdateRequired = true;
 		this->setTouchEnabled(true);
-		this->setKeyboardEnabled(true);
 		this->_eventDispatcher->resumeEventListenersForTarget(this->getChildByName("menuButton"));
 		this->_eventDispatcher->resumeEventListenersForTarget(this->getChildByName("player"));
 		removeChildByTag(PAUSE_SCENE_TAG);
@@ -518,7 +577,6 @@ void GameScene::openMenu() {
 
 	Director::getInstance()->pause();
 	this->setTouchEnabled(false);
-	this->setKeyboardEnabled(false);
 	this->_eventDispatcher->pauseEventListenersForTarget(this->getChildByName("menuButton"));
 	this->_eventDispatcher->pauseEventListenersForTarget(this->getChildByName("player"));
 	auto scene = PauseScene::createScene();

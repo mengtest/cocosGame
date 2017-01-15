@@ -11,6 +11,7 @@ public:
 	Map<std::string, Sprite*> spritesMap;
 
 	int hitsToShot = 3;
+	bool dead = false;
 	int hitBoxXOffset = 100;
 	int hitBoxYOffset = 50;
 

@@ -29,14 +29,15 @@ public:
 	int bulletOffsetX = 35;
 	int bulletOffsetY = 15;
 
-	float spawnEnemyFrequency = 1;
-	float enemySpeed = 0.05;
-	float bulletSpeed = 0.005;
+	float spawnEnemyFrequency = 1.6;
+	float enemySpeed = 0.06f;
+	float bulletSpeed = 0.005f;
 	float eaterPointsPerSecX = 0;
 	float eaterPointsPerSecY = 0;
 	float startYOffset = 0;
 	float startXOffset = 0;
 
+	bool acceleratorOffsetUpdateRequired = false;
 	bool movementStarted = false;
 	bool wPressed = false;
 	bool sPressed = false;
@@ -67,7 +68,10 @@ public:
 	void createGun();
 	void initMap();
 	void removeCorpse(Sprite*);
+	void removeDeadMonster(Monster*);
+	void fadeHideMonster(Monster*);
 	void restoreEnemy(Sprite*);
+	void onDamageReceived(Sprite*);
 	void runFadeActionForSprite(float delay, Sprite* sprite);
 	void menuOpenMenuCallback(Ref* pSender);
 	void menuCloseCallback(Ref* pSender);
@@ -79,8 +83,8 @@ public:
 	GameScene();
 	~GameScene();
 protected:
-	CCArray *_targets;
-	CCArray *_bullets;
+	__Array *_targets;
+	__Array *_bullets;
 
 	Map<std::string, Sprite*> playerMap;
 };

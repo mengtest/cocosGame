@@ -67,11 +67,15 @@ bool MainMenuScene::init()
 		case EventKeyboard::KeyCode::KEY_ENTER:
 			startNewGame(this);
 			break;
+		case EventKeyboard::KeyCode::KEY_SPACE:
+			startNewGame(this);
+			break;
 		}
 	};
 
 	this->_eventDispatcher->addEventListenerWithSceneGraphPriority(eventListener, menu);
 
+	return true;
 }
 
 void MainMenuScene::startNewGame(Ref* pSender) {
