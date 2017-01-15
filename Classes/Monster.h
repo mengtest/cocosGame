@@ -10,11 +10,11 @@ public:
 
 	Map<std::string, Sprite*> spritesMap;
 
-	int hitsToShot = 3;
+	int hitsToShot = 100;
 	bool dead = false;
 	int hitBoxXOffset = 100;
 	int hitBoxYOffset = 50;
 
-	std::string getDeadTexture();
+	//std::string getDeadTexture();
 };
 

@@ -18,25 +18,59 @@ public:
 	static Scene* createScene();
 	Size winSize;
 	Label* acceleration;
+	Label* coinsLabel;
 	Label* label;
 	Sprite* player;
+
+	int ammo = 0;
+	int shootMode = 0;
+
+	int MENU_BUTTON_TAG = 40;
+	int MAP_TAG = 0;
+	int MAP_LIGHT_TAG = 1;
+	int MAP_SHADOW_TAG = 20;
+	int PLAYER_TAG = 17;
+	int PLAYER_SHADOW_TAG = 16;
+	int PLAYER_GUN_TAG = 17;
+	int BULLET_TAG = 13;
+	int GUN_FIRE_TAG = 17;
+	int MONSTER_TAG = 10;
+	int MONSTER_SHADOW_TAG = 10;
+	int MONSTER_BLOOD_TAG = 9;
+	int COIN_TAG = 9;
 
 	int pixelSize = 5;
 	int gunOffsetX = 102;
 	int gunOffsetY = 2;
-	int gunFireOffsetX = 100;
+	int gunFireOffsetX = 110;
 	int gunFireOffsetY = 10;
+	int pistolFireOffsetX = 90;
+	int pistolFireOffsetY = 10;
 	int bulletOffsetX = 35;
 	int bulletOffsetY = 15;
+	int gunBulletOffsetX = 55;
+	int gunBulletOffsetY = 10;
+	int coinOffsetX = 0;
+	int coinOffsetY = 0;
+	int playerLeftPadding = 60;
+	int playerRightPadding = 60;
+	int playerUpPadding = 60;
+	int playerDownPadding = 20;
+	int coins = 0;
 
-	float spawnEnemyFrequency = 1.6;
+	float spawnEnemyFrequency = 1.2;
 	float enemySpeed = 0.06f;
 	float bulletSpeed = 0.005f;
 	float eaterPointsPerSecX = 0;
 	float eaterPointsPerSecY = 0;
 	float startYOffset = 0;
 	float startXOffset = 0;
+	float gunBlockShootingTime = 0.13f;
+	float pistolBlockShootingTime = 0.18f;
+	float blockShootingTime = pistolBlockShootingTime;
+	float dropCoinProbability = 0.1f;
 
+	bool firePressed = false;
 	bool acceleratorOffsetUpdateRequired = false;
 	bool movementStarted = false;
 	bool wPressed = false;
@@ -47,9 +81,11 @@ public:
 	bool sWasPressed = false;
 	bool aWasPressed = false;
 	bool dWasPressed = false;
+	bool blockShooting = false;
 
 	void addMonster();
 	void onTouchesEnded(const std::vector<Touch*>& pTouches, Event *pEvent);
+	void onTouchesBegan(const std::vector<Touch*>& pTouches, Event *pEvent);
 	void gameLogic(float);
 	void checkIntersections();
 	void moveEnemies(float);
@@ -62,8 +98,9 @@ public:
 	void addKeyboardEventListener();
 	void addAccelarationEventListener();
 	void initArrays();
-	void initMenuButton();
+	void initUI();
 	void createPlayer();
+	void switchAmmo(Ref* pSender);
 	void movePlayer(float);
 	void createGun();
 	void initMap();
@@ -71,10 +108,13 @@ public:
 	void removeDeadMonster(Monster*);
 	void fadeHideMonster(Monster*);
 	void restoreEnemy(Sprite*);
-	void onDamageReceived(Sprite*);
+	void onDamageReceived(Monster* monster);
 	void runFadeActionForSprite(float delay, Sprite* sprite);
 	void menuOpenMenuCallback(Ref* pSender);
 	void menuCloseCallback(Ref* pSender);
+	void allowShooting();
+	void onKillMonster(Monster* monster);
+	void dropCoin(Monster* monster);
 
 	int floorToPixelSize(int number);
 
@@ -85,6 +125,7 @@ public:
 protected:
 	__Array *_targets;
 	__Array *_bullets;
+	__Array *_loot;
 
 	Map<std::string, Sprite*> playerMap;
 };
