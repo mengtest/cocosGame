@@ -7,6 +7,7 @@
 #include "MainMenuScene.h"
 #include "PauseScene.h"
 #include "Monster.h"
+#include "Weapon.h"
 #include "ui/CocosGUI.h"
 
 using namespace cocos2d;
@@ -21,9 +22,12 @@ public:
 	Label* coinsLabel;
 	Label* label;
 	Sprite* player;
+	Weapon* currentWeapon;
 
-	int ammo = 0;
-	int shootMode = 0;
+	//int ammo = 0;
+	//int shootMode = 0;
+
+	int gunIndex = 0;
 
 	int MENU_BUTTON_TAG = 40;
 	int MAP_TAG = 0;
@@ -38,18 +42,9 @@ public:
 	int MONSTER_SHADOW_TAG = 10;
 	int MONSTER_BLOOD_TAG = 9;
 	int COIN_TAG = 9;
+	int RELOAD_BAR_TAG = 18;
 
 	int pixelSize = 5;
-	int gunOffsetX = 102;
-	int gunOffsetY = 2;
-	int gunFireOffsetX = 110;
-	int gunFireOffsetY = 10;
-	int pistolFireOffsetX = 90;
-	int pistolFireOffsetY = 10;
-	int bulletOffsetX = 35;
-	int bulletOffsetY = 15;
-	int gunBulletOffsetX = 55;
-	int gunBulletOffsetY = 10;
 	int coinOffsetX = 0;
 	int coinOffsetY = 0;
 	int playerLeftPadding = 60;
@@ -65,9 +60,9 @@ public:
 	float eaterPointsPerSecY = 0;
 	float startYOffset = 0;
 	float startXOffset = 0;
-	float gunBlockShootingTime = 0.13f;
-	float pistolBlockShootingTime = 0.18f;
-	float blockShootingTime = pistolBlockShootingTime;
+
+
+	float blockShootingTime = 0;
 	float dropCoinProbability = 0.1f;
 
 	bool firePressed = false;
@@ -82,6 +77,7 @@ public:
 	bool aWasPressed = false;
 	bool dWasPressed = false;
 	bool blockShooting = false;
+	bool reloading = false;
 
 	void addMonster();
 	void onTouchesEnded(const std::vector<Touch*>& pTouches, Event *pEvent);
@@ -103,7 +99,10 @@ public:
 	void switchAmmo(Ref* pSender);
 	void movePlayer(float);
 	void createGun();
+	void showReloadBar(float);
+	void hideReloadBar();
 	void initMap();
+	void initWeapons();
 	void removeCorpse(Sprite*);
 	void removeDeadMonster(Monster*);
 	void fadeHideMonster(Monster*);
@@ -123,6 +122,7 @@ public:
 	GameScene();
 	~GameScene();
 protected:
+	__Array *_weapons;
 	__Array *_targets;
 	__Array *_bullets;
 	__Array *_loot;

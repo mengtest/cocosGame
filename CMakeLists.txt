@@ -136,6 +136,7 @@ set(GAME_SRC
   Classes/MainMenuScene.cpp
   Classes/PauseScene.cpp
   Classes/Monster.cpp
+  Classes/Weapon.cpp
   ${PLATFORM_SPECIFIC_SRC}
 )
 
@@ -145,6 +146,7 @@ set(GAME_HEADERS
   Classes/MainMenuScene.h
   Classes/PauseScene.h
   Classes/Monster.h
+  Classes/Weapon.h
   ${PLATFORM_SPECIFIC_HEADERS}
 )
 

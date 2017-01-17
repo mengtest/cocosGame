@@ -3,7 +3,7 @@
 
 USING_NS_CC;
 
-GameScene::GameScene() : _targets(NULL), _bullets(NULL), _loot(NULL) {}
+GameScene::GameScene() : _targets(NULL), _bullets(NULL), _loot(NULL), _weapons(NULL) {}
 
 Scene* GameScene::createScene()
 {
@@ -30,6 +30,11 @@ GameScene::~GameScene()
 		_loot->release();
 		_loot = NULL;
 	}
+	if (_weapons)
+	{
+		_weapons->release();
+		_weapons = NULL;
+	}
 }
 
 bool GameScene::init()
@@ -44,6 +49,7 @@ bool GameScene::init()
 	initUI();
 	initMap();
 	createPlayer();
+	initWeapons();
 	createGun();
 	
 	this->schedule(schedule_selector(GameScene::gameLogic), spawnEnemyFrequency);
@@ -58,12 +64,27 @@ bool GameScene::init()
 }
 
 void GameScene::initArrays() {
-	_targets = CCArray::create();
+	_targets = __Array::create();
 	_targets->retain();
-	_bullets = CCArray::create();
+	_bullets = __Array::create();
 	_bullets->retain();
-	_loot = CCArray::create();
+	_loot = __Array::create();
 	_loot->retain();
+	_weapons = __Array::create();
+	_weapons->retain();
+}
+
+void GameScene::initWeapons() {
+	Weapon *weapon1 = new Weapon();
+	weapon1->makeLazerPistol();
+	_weapons->addObject(weapon1);
+
+	Weapon *weapon2 = new Weapon();
+	weapon2->makeLazerGun();
+	_weapons->addObject(weapon2);
+
+	currentWeapon = new Weapon();
+	currentWeapon = dynamic_cast<Weapon*>(_weapons->getObjectAtIndex(0));
 }
 
 void GameScene::initUI() {
@@ -93,8 +114,6 @@ void GameScene::initUI() {
 	coinsLabel->setString(buffer1);
 	this->addChild(coinsLabel, 40);
 
-	//auto visibleSize = Director::getInstance()->getVisibleSize();
-	//Vec2 origin = Director::getInstance()->getVisibleOrigin();
 	auto switchAmmoButton = MenuItemImage::create(
 		"images/ui/switch_ammo_button.png",
 		"images/ui/switch_ammo_button.png",
@@ -107,37 +126,24 @@ void GameScene::initUI() {
 }
 
 void GameScene::switchAmmo(Ref* pSender) {
-	if (ammo == 0) {
+	if (!reloading) {
 		playerMap.at("gun")->stopAllActions();
 		Vector<SpriteFrame*> animFrames;
 		animFrames.reserve(2);
-
-		animFrames.pushBack(SpriteFrame::create("images/player/gun/gun_3.png", Rect(0, 0, 130, 100)));
-		animFrames.pushBack(SpriteFrame::create("images/player/gun/gun_4.png", Rect(0, 0, 130, 100)));
-
-		Animation* animation = Animation::createWithSpriteFrames(animFrames, 0.28f);
+		gunIndex++;
+		if (gunIndex > _weapons->count() - 1) {
+			gunIndex = 0;
+		}
+		currentWeapon = dynamic_cast<Weapon*>(_weapons->getObjectAtIndex(gunIndex));
+		Ref* jt = NULL;
+		CCARRAY_FOREACH(currentWeapon->_ammoFrames, jt)
+		{
+			String *frameUri = dynamic_cast<String*>(jt);
+			animFrames.pushBack(SpriteFrame::create(frameUri->getCString(), Rect(0, 0, currentWeapon->frameWidth, currentWeapon->frameHeight)));
+		}
+		Animation* animation = Animation::createWithSpriteFrames(animFrames, currentWeapon->ammoAnimSpeed);
 		Animate* animate = Animate::create(animation);
-
 		playerMap.at("gun")->runAction(RepeatForever::create(animate));
-		ammo = 1;
-		shootMode = 1;
-		blockShootingTime = gunBlockShootingTime;
-	}
-	else {
-		playerMap.at("gun")->stopAllActions();
-		Vector<SpriteFrame*> animFrames;
-		animFrames.reserve(2);
-
-		animFrames.pushBack(SpriteFrame::create("images/player/gun/gun.png", Rect(0, 0, 130, 100)));
-		animFrames.pushBack(SpriteFrame::create("images/player/gun/gun_2.png", Rect(0, 0, 130, 100)));
-
-		Animation* animation = Animation::createWithSpriteFrames(animFrames, 0.28f);
-		Animate* animate = Animate::create(animation);
-
-		playerMap.at("gun")->runAction(RepeatForever::create(animate));
-		ammo = 0;
-		shootMode = 0;
-		blockShootingTime = pistolBlockShootingTime;
 	}
 }
 
@@ -194,22 +200,20 @@ void GameScene::createPlayer() {
 void GameScene::createGun() {
 
 	Sprite* gun = Sprite::create("images/player/gun/gun.png");
-	gun->setScale(1);
-	gun->setPosition(Vec2(playerMap.at("player")->getPosition().x + gunOffsetX, playerMap.at("player")->getPosition().y + gunOffsetY));
-
+	gun->setPosition(Vec2(playerMap.at("player")->getPosition().x + currentWeapon->gunOffsetX, playerMap.at("player")->getPosition().y + currentWeapon->gunOffsetY));
 	Vector<SpriteFrame*> animFrames;
 	animFrames.reserve(2);
-
-	animFrames.pushBack(SpriteFrame::create("images/player/gun/gun.png", Rect(0, 0, 130, 100)));
-	animFrames.pushBack(SpriteFrame::create("images/player/gun/gun_2.png", Rect(0, 0, 130, 100)));
-
-	Animation* animation = Animation::createWithSpriteFrames(animFrames, 0.28f);
+	Ref* jt = NULL;
+	CCARRAY_FOREACH(currentWeapon->_ammoFrames, jt)
+	{
+		String *frameUri = dynamic_cast<String*>(jt);
+		animFrames.pushBack(SpriteFrame::create(frameUri->getCString(), Rect(0, 0, currentWeapon->frameWidth, currentWeapon->frameHeight)));
+	}
+	Animation* animation = Animation::createWithSpriteFrames(animFrames, currentWeapon->ammoAnimSpeed);
 	Animate* animate = Animate::create(animation);
-
 	gun->runAction(RepeatForever::create(animate));
 	std::string mapKey0 = "gun";
 	playerMap.insert(mapKey0, gun);
-
 	this->addChild(playerMap.at("gun"), PLAYER_GUN_TAG, "gun");
 }
 
@@ -232,7 +236,7 @@ void GameScene::addKeyboardEventListener() {
 			break;
 		case EventKeyboard::KeyCode::KEY_SPACE:
 			firePressed = true;
-			shoot();
+			shoot(); 
 			break;
 		case EventKeyboard::KeyCode::KEY_A:
 			aWasPressed = true;
@@ -327,7 +331,7 @@ void GameScene::onTouchesEnded(const std::vector<cocos2d::Touch *> &touches, coc
 
 	for (auto& touch : touches) {
 		if (touch) {
-			shoot();
+			//shoot();
 			firePressed = false;
 		}
 	}
@@ -337,7 +341,7 @@ void GameScene::onTouchesBegan(const std::vector<cocos2d::Touch *> &touches, coc
 
 	for (auto& touch : touches) {
 		if (touch) {
-			//shoot();
+			shoot();
 			firePressed = true;
 		}
 	}
@@ -345,40 +349,61 @@ void GameScene::onTouchesBegan(const std::vector<cocos2d::Touch *> &touches, coc
 
 void GameScene::shoot() {
 	if (!blockShooting) {
-		Sprite *bullet = Sprite::create("images/bullet.png");
-		if (ammo == 1) {
-			bullet->setTexture("images/player/gun/bullet_3.png");
-		}
-		int posX = floorToPixelSize(playerMap.at("gun")->getPositionX() + bulletOffsetX);
-		int posY = floorToPixelSize(playerMap.at("gun")->getPositionY() + bulletOffsetY);
-		if (ammo == 1) {
-			posX = floorToPixelSize(playerMap.at("gun")->getPositionX() + gunBulletOffsetX);
-			posY = floorToPixelSize(playerMap.at("gun")->getPositionY() + gunBulletOffsetY);
-		}
-		bullet->setPosition(Vec2(posX, posY));
-		bullet->setTag(2);
-		_bullets->addObject(bullet);
-		this->addChild(bullet, BULLET_TAG);
-
-		auto gunFire = Sprite::create("images/player/gun/fire.png");
-		if (ammo == 1) {
-			gunFire->setTexture("images/player/gun/fire_2.png");
-			gunFire->setPosition(playerMap.at("gun")->getPosition().x + gunFireOffsetX, playerMap.at("gun")->getPosition().y + gunFireOffsetY);
-			this->addChild(gunFire, GUN_FIRE_TAG, "gunFire");
-			auto action = Sequence::create(DelayTime::create(0.05f), CallFunc::create(std::bind(&GameScene::removeCorpse, this, gunFire)), NULL);
-			this->runAction(action);
+		if (currentWeapon->currentBulletsNumber <= 0) {
+			showReloadBar(currentWeapon->reloadTime);
+			auto allowShootingAction = Sequence::create(DelayTime::create(currentWeapon->reloadTime), CallFunc::create(std::bind(&GameScene::allowShooting, this)), NULL);
+			this->runAction(allowShootingAction);
+			auto hideReloadBarAction = Sequence::create(DelayTime::create(currentWeapon->reloadTime), CallFunc::create(std::bind(&GameScene::hideReloadBar, this)), NULL);
+			this->runAction(hideReloadBarAction);
+			reloading = true;
+			blockShooting = true;
 		}
 		else {
-			gunFire->setPosition(playerMap.at("gun")->getPosition().x + pistolFireOffsetX, playerMap.at("gun")->getPosition().y + pistolFireOffsetY);
+			Sprite *bullet = Sprite::create(currentWeapon->bulletUri->getCString());
+			int posX = floorToPixelSize(playerMap.at("gun")->getPositionX() + currentWeapon->bulletOffsetX);
+			int posY = floorToPixelSize(playerMap.at("gun")->getPositionY() + currentWeapon->bulletOffsetY);
+			bullet->setPosition(Vec2(posX, posY));
+			bullet->setTag(2);
+			_bullets->addObject(bullet);
+			this->addChild(bullet, BULLET_TAG);
+
+			auto gunFire = Sprite::create(currentWeapon->gunFireUri->getCString());
+			gunFire->setPosition(playerMap.at("gun")->getPosition().x + currentWeapon->gunFireOffsetX, playerMap.at("gun")->getPosition().y + currentWeapon->gunFireOffsetY);
 			this->addChild(gunFire, GUN_FIRE_TAG, "gunFire");
-			auto action = Sequence::create(DelayTime::create(0.08f), CallFunc::create(std::bind(&GameScene::removeCorpse, this, gunFire)), NULL);
+			auto action = Sequence::create(DelayTime::create(currentWeapon->gunFireRemoveDelay), CallFunc::create(std::bind(&GameScene::removeCorpse, this, gunFire)), NULL);
 			this->runAction(action);
+
+			currentWeapon->currentBulletsNumber--;
+			blockShooting = true;
+			auto allowShootingAction = Sequence::create(DelayTime::create(currentWeapon->blockShootingTime), CallFunc::create(std::bind(&GameScene::allowShooting, this)), NULL);
+			this->runAction(allowShootingAction);
 		}
-		
-		blockShooting = true;
-		auto allowShootingAction = Sequence::create(DelayTime::create(blockShootingTime), CallFunc::create(std::bind(&GameScene::allowShooting, this)), NULL);
-		this->runAction(allowShootingAction);
 	}
+}
+
+void GameScene::hideReloadBar() {
+	reloading = false;
+	currentWeapon->currentBulletsNumber = currentWeapon->maxBulletsNumber;
+	this->removeChildByName("reloadBar");
+}
+
+void GameScene::showReloadBar(float reloadTime) {
+	Sprite* reloadBar = Sprite::create("images/player/gun/reload_bar/1.png");
+	reloadBar->setPosition(Vec2(playerMap.at("player")->getPosition().x + currentWeapon->reloadBarOffsetX, playerMap.at("player")->getPosition().y + currentWeapon->reloadBarOffsetY));
+	Vector<SpriteFrame*> animFrames;
+	animFrames.reserve(2);
+	animFrames.pushBack(SpriteFrame::create("images/player/gun/reload_bar/1.png", Rect(0, 0, 100, 50)));
+	animFrames.pushBack(SpriteFrame::create("images/player/gun/reload_bar/2.png", Rect(0, 0, 100, 50)));
+	animFrames.pushBack(SpriteFrame::create("images/player/gun/reload_bar/3.png", Rect(0, 0, 100, 50)));
+	animFrames.pushBack(SpriteFrame::create("images/player/gun/reload_bar/4.png", Rect(0, 0, 100, 50)));
+	animFrames.pushBack(SpriteFrame::create("images/player/gun/reload_bar/5.png", Rect(0, 0, 100, 50)));
+	animFrames.pushBack(SpriteFrame::create("images/player/gun/reload_bar/6.png", Rect(0, 0, 100, 50)));
+	Animation* animation = Animation::createWithSpriteFrames(animFrames, currentWeapon->reloadTime / 6);
+	Animate* animate = Animate::create(animation);
+	reloadBar->runAction(Repeat::create(animate, 1));
+	std::string mapKey0 = "reloadBar";
+	playerMap.insert(mapKey0, reloadBar);
+	this->addChild(playerMap.at("reloadBar"), RELOAD_BAR_TAG, "reloadBar");
 }
 
 void GameScene::allowShooting() {
@@ -491,16 +516,13 @@ void GameScene::movePlayer(float dt) {
 	}
 
 	playerMap.at("player")->setPosition(newX, newY);
-	playerMap.at("gun")->setPosition(newX + gunOffsetX, newY + gunOffsetY);
+	playerMap.at("gun")->setPosition(newX + currentWeapon->gunOffsetX, newY + currentWeapon->gunOffsetY);
 	playerMap.at("hero_shadow")->setPosition(newX, newY);
 	if (this->getChildByName("gunFire")) {
-		if (ammo == 0) {
-			this->getChildByName("gunFire")->setPosition(playerMap.at("gun")->getPosition().x + pistolFireOffsetX, playerMap.at("gun")->getPosition().y + pistolFireOffsetY);
-		}
-		else {
-			this->getChildByName("gunFire")->setPosition(playerMap.at("gun")->getPosition().x + gunFireOffsetX, playerMap.at("gun")->getPosition().y + gunFireOffsetY);
-		}
-		
+		this->getChildByName("gunFire")->setPosition(playerMap.at("gun")->getPosition().x + currentWeapon->gunFireOffsetX, playerMap.at("gun")->getPosition().y + currentWeapon->gunFireOffsetY);
+	}
+	if (this->getChildByName("reloadBar")) {
+		this->getChildByName("reloadBar")->setPosition(playerMap.at("player")->getPosition().x + currentWeapon->reloadBarOffsetX, playerMap.at("player")->getPosition().y + currentWeapon->reloadBarOffsetY);
 	}
 }
 
@@ -566,13 +588,7 @@ void GameScene::checkIntersections() {
 	CCARRAY_FOREACH(targetsToDelete, jt)
 	{
 		Monster *currentMonster = dynamic_cast<Monster*>(jt);
-		if (ammo == 0) {
-			currentMonster->hitsToShot -= 50;
-		}
-		else {
-			currentMonster->hitsToShot -= 40;
-		}
-		
+		currentMonster->hitsToShot -= currentWeapon->damage;
 		onDamageReceived(currentMonster);
 		if (currentMonster->hitsToShot < 1) {
 			onKillMonster(currentMonster);
@@ -732,21 +748,22 @@ void GameScene::update(float dt)
 	movePlayer(dt);
 	checkIntersections();
 
-	if (!blockShooting && firePressed && ammo == 1 & shootMode == 1) {
+	if (!blockShooting && firePressed && currentWeapon->ammo == 1 & currentWeapon->shootMode == 1) {
 		shoot();
-		blockShooting = true;
 	}
 }
 
 void GameScene::onDamageReceived(Monster* currentMonster) {
 	Sprite *target = currentMonster->spritesMap.at("monster");
 	target->setColor(Color3B(0, 0, 0));
-	auto action = Sequence::create(DelayTime::create(0.07f), CallFunc::create(std::bind(&GameScene::restoreEnemy, this, target)), NULL);
+	//target->setOpacity(0);
+	auto action = Sequence::create(DelayTime::create(0.04f), CallFunc::create(std::bind(&GameScene::restoreEnemy, this, target)), NULL);
 	this->runAction(action);
 }
 
 void GameScene::restoreEnemy(Sprite* target) {
 	target->setColor(Color3B(255, 255, 255));
+	//target->setOpacity(255);
 }
 
 void GameScene::removeCorpse(Sprite* target) {
