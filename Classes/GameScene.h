@@ -18,12 +18,12 @@ public:
 	ui::Button* uButton;
 	static Scene* createScene();
 	Size winSize;
+	cocos2d::Sprite* darkness;
 	Label* acceleration;
 	Label* coinsLabel;
 	Label* label;
 	Sprite* player;
 	Weapon* currentWeapon;
-
 	//int ammo = 0;
 	//int shootMode = 0;
 
@@ -52,7 +52,16 @@ public:
 	int playerUpPadding = 60;
 	int playerDownPadding = 20;
 	int coins = 0;
+	int coinsIndicatorOffsetX = 201;
+	int coinsQuantityOffsetX = 88;
+	int levelMonstersQuantity = 50;
+	int currentMonstersSendQuantity = 0;
+	int currentMonstersInGameQuantity = 0;
 
+	int lifesOffsetX = 35;
+	int lifesOffsetY = -40;
+
+	float fadeTime = 1.0f;
 	float spawnEnemyFrequency = 1.2;
 	float enemySpeed = 0.06f;
 	float bulletSpeed = 0.005f;
@@ -60,10 +69,9 @@ public:
 	float eaterPointsPerSecY = 0;
 	float startYOffset = 0;
 	float startXOffset = 0;
-
-
+	float delayBeforeShowLevelComplete = 1.0f;
 	float blockShootingTime = 0;
-	float dropCoinProbability = 0.1f;
+	float dropCoinProbability = 0.04f;
 
 	bool firePressed = false;
 	bool acceleratorOffsetUpdateRequired = false;
@@ -78,7 +86,12 @@ public:
 	bool dWasPressed = false;
 	bool blockShooting = false;
 	bool reloading = false;
+	bool pause = true;
+	bool levelComplete = false;
+	bool levelCompleteAndMessageShown = false;
+	bool levelCompleteTapped = false;
 
+	//void onEnter();
 	void addMonster();
 	void onTouchesEnded(const std::vector<Touch*>& pTouches, Event *pEvent);
 	void onTouchesBegan(const std::vector<Touch*>& pTouches, Event *pEvent);
@@ -104,6 +117,7 @@ public:
 	void initMap();
 	void initWeapons();
 	void removeCorpse(Sprite*);
+	void setSpriteVisibleTrue(Monster*);
 	void removeDeadMonster(Monster*);
 	void fadeHideMonster(Monster*);
 	void restoreEnemy(Sprite*);
@@ -113,7 +127,10 @@ public:
 	void menuCloseCallback(Ref* pSender);
 	void allowShooting();
 	void onKillMonster(Monster* monster);
-	void dropCoin(Monster* monster);
+	void dropCoin(Monster* monster, int);
+	void showLevelComplete();
+	void onLevelCompleteTap();
+	void goToMainMenu();
 
 	int floorToPixelSize(int number);
 

@@ -21,6 +21,7 @@ Scene* PauseScene::createScene()
 
 bool PauseScene::init()
 {
+	this->resume();
 	if (!LayerColor::initWithColor(Color4B(0, 0, 0, 170))){
 		return false;
 	}
@@ -59,6 +60,12 @@ bool PauseScene::init()
 
 	this->_eventDispatcher->addEventListenerWithSceneGraphPriority(eventListener, menu);
 
+	darkness = Sprite::create("images/map/map.png");
+	darkness->setAnchorPoint(Vec2(0, 0));
+	darkness->setPosition(Vec2(0, 0));
+	darkness->setColor(Color3B(0, 0, 0));
+	darkness->setOpacity(0);
+	this->addChild(darkness, 100, "darkness");
 	return true;
 }
 
@@ -68,6 +75,16 @@ void PauseScene::menuCloseCallback(Ref* pSender)
 }
 
 void PauseScene::goToMainMenu(Ref* pSender) {
+	//resumeGame();
+	//auto action = Sequence::create(DelayTime::create(fadeTime), CallFunc::create(std::bind(&PauseScene::innerGoToMainMenu, this)), NULL);
+	//this->runAction(action);
+	//auto fadeIn = FadeIn::create(fadeTime);
+	//darkness->runAction(fadeIn);
+	
+	innerGoToMainMenu();
+}
+
+void PauseScene::innerGoToMainMenu() {
 	resumeGame();
 	auto scene = MainMenuScene::createScene();
 	Director::getInstance()->replaceScene(scene);
@@ -75,5 +92,4 @@ void PauseScene::goToMainMenu(Ref* pSender) {
 
 void PauseScene::resumeGame() {
 	Director::getInstance()->resume();
-	this->removeFromParentAndCleanup(true);
 }

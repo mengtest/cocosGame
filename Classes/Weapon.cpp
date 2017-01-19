@@ -21,8 +21,8 @@ void Weapon::makeLazerPistol() {
 	this->shootMode = 0;
 	this->maxBulletsNumber = 6;
 	this->currentBulletsNumber = maxBulletsNumber;
-	this->reloadTime = 1.0f;
-	this->blockShootingTime = 0.14f;
+	this->reloadTime = 1.4f;
+	this->blockShootingTime = 0.13f;
 	this->reloadBarOffsetX = 102;
 	this->reloadBarOffsetY = 57;
 	this->gunOffsetX = 102;
@@ -46,9 +46,9 @@ void Weapon::makeLazerGun() {
 	this->ammo = 1;
 	this->maxBulletsNumber = 24;
 	this->currentBulletsNumber = maxBulletsNumber;
-	this->reloadTime = 2.0f;
+	this->reloadTime = 2.7f;
 	this->shootMode = 1;
-	this->blockShootingTime = 0.13f;
+	this->blockShootingTime = 0.12f;
 	this->reloadBarOffsetX = 102;
 	this->reloadBarOffsetY = 72;
 	this->gunOffsetX = 102;

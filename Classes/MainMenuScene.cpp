@@ -75,10 +75,28 @@ bool MainMenuScene::init()
 
 	this->_eventDispatcher->addEventListenerWithSceneGraphPriority(eventListener, menu);
 
+	back2 = Sprite::create("images/map/map.png");
+	back2->setAnchorPoint(Vec2(0, 0));
+	back2->setPosition(Vec2(0, 0));
+	back2->setColor(Color3B(0, 0, 0));
+	this->addChild(back2, 100, "back2");
+	auto fadeIn = FadeOut::create(fadeTime);
+	back2->runAction(fadeIn);
+
 	return true;
 }
 
 void MainMenuScene::startNewGame(Ref* pSender) {
+	if (!startingGame) {
+		auto fadeIn = FadeIn::create(fadeTime);
+		back2->runAction(fadeIn);
+		auto startGameAction = Sequence::create(DelayTime::create(fadeTime), CallFunc::create(std::bind(&MainMenuScene::innerStartNewGame, this)), NULL);
+		this->runAction(startGameAction);
+		startingGame = true;
+	}
+}
+
+void MainMenuScene::innerStartNewGame() {
 	auto scene = GameScene::createScene();
 	Director::getInstance()->replaceScene(scene);
 }
@@ -88,10 +106,19 @@ void MainMenuScene::menuCloseCallback(Ref* pSender)
 	close();
 }
 
-void MainMenuScene::close() {
+void MainMenuScene::innerClose() {
 	Director::getInstance()->end();
-
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
 	exit(0);
 #endif
+}
+
+void MainMenuScene::close() {
+	if (!startingGame && !endingGame) {
+		auto fadeIn = FadeIn::create(fadeTime);
+		back2->runAction(fadeIn);
+		auto endGameAction = Sequence::create(DelayTime::create(fadeTime), CallFunc::create(std::bind(&MainMenuScene::innerClose , this)), NULL);
+		this->runAction(endGameAction);
+		endingGame = true;
+	}
 }

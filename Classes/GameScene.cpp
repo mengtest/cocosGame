@@ -9,7 +9,7 @@ Scene* GameScene::createScene()
 {
 	auto scene = Scene::create();
 	auto layer = GameScene::create();
-	scene->addChild(layer);
+	scene->addChild(layer, 0, "gameLayer");
 	return scene;
 }
 
@@ -56,10 +56,18 @@ bool GameScene::init()
 	this->schedule(schedule_selector(GameScene::moveEnemies), enemySpeed);
 	this->schedule(schedule_selector(GameScene::moveBullets), bulletSpeed);
 	this->schedule(schedule_selector(GameScene::update));
-
+	
 	addKeyboardEventListener();
 	addAccelarationEventListener();
 	
+	darkness = Sprite::create("images/map/map.png");
+	darkness->setAnchorPoint(Vec2(0, 0));
+	darkness->setPosition(Vec2(0, 0));
+	darkness->setColor(Color3B(0, 0, 0));
+	this->addChild(darkness, 100, "darkness");
+	auto fadeIn = FadeOut::create(fadeTime);
+	darkness->runAction(fadeIn);
+
 	return true;
 }
 
@@ -103,14 +111,27 @@ void GameScene::initUI() {
 
 	cocos2d::Sprite* coinsSpite = Sprite::create("images/ui/coin_icon.png");
 	coinsSpite->setAnchorPoint(Vec2(0, 0));
-	coinsSpite->setPosition(Vec2(0, winSize.height - coinsSpite->getContentSize().height));
+	coinsSpite->setPosition(Vec2(coinsIndicatorOffsetX, floorToPixelSize(winSize.height - coinsSpite->getContentSize().height)));
 	this->addChild(coinsSpite, 40, "coinSprite");
+
+	cocos2d::Sprite* life1 = Sprite::create("images/ui/life_full.png");
+	life1->setAnchorPoint(Vec2(0, 0));
+	life1->setPosition(Vec2(lifesOffsetX, lifesOffsetY + winSize.height - life1->getContentSize().height));
+	this->addChild(life1, 40, "liflifesOffsetXe1Sprite");
+	cocos2d::Sprite* life2 = Sprite::create("images/ui/life_full.png");
+	life2->setAnchorPoint(Vec2(0, 0));
+	life2->setPosition(Vec2(lifesOffsetX + 50, lifesOffsetY + winSize.height - life2->getContentSize().height));
+	this->addChild(life2, 40, "life2Sprite");
+	cocos2d::Sprite* life3 = Sprite::create("images/ui/life_full.png");
+	life3->setAnchorPoint(Vec2(0, 0));
+	life3->setPosition(Vec2(lifesOffsetX + 100, lifesOffsetY + winSize.height - life3->getContentSize().height));
+	this->addChild(life3, 40, "life3Sprite");
 
 	coinsLabel = Label::create("1200", "fonts/Marker Felt.ttf", 50);
 	coinsLabel->setAnchorPoint(Vec2(0, 0));
-	coinsLabel->setPosition(Point(100, winSize.height - 96));
+	coinsLabel->setPosition(Point(coinsQuantityOffsetX + coinsIndicatorOffsetX, winSize.height - 96));
 	char buffer1[100];
-	sprintf(buffer1, "%d", coins);
+	sprintf(buffer1, "x%d", coins);
 	coinsLabel->setString(buffer1);
 	this->addChild(coinsLabel, 40);
 
@@ -231,12 +252,22 @@ void GameScene::addKeyboardEventListener() {
 		case EventKeyboard::KeyCode::KEY_BACKSPACE:
 			Director::getInstance()->end();
 			break;
+		case EventKeyboard::KeyCode::KEY_ENTER:
+			if (levelCompleteAndMessageShown && !levelCompleteTapped) {
+				onLevelCompleteTap();
+			}
+			break;
 		case EventKeyboard::KeyCode::KEY_ESCAPE:
 			openMenu();
 			break;
 		case EventKeyboard::KeyCode::KEY_SPACE:
-			firePressed = true;
-			shoot(); 
+			if (levelCompleteAndMessageShown && !levelCompleteTapped) {
+				onLevelCompleteTap();
+			}
+			else {
+				shoot();
+				firePressed = true;
+			}
 			break;
 		case EventKeyboard::KeyCode::KEY_A:
 			aWasPressed = true;
@@ -341,14 +372,49 @@ void GameScene::onTouchesBegan(const std::vector<cocos2d::Touch *> &touches, coc
 
 	for (auto& touch : touches) {
 		if (touch) {
-			shoot();
-			firePressed = true;
+			if (levelCompleteAndMessageShown && !levelCompleteTapped) {
+				onLevelCompleteTap();
+			}
+			else {
+				shoot();
+				firePressed = true;
+			}
 		}
 	}
 }
 
+void GameScene::onLevelCompleteTap() {
+	levelCompleteTapped = true;
+	auto action = Sequence::create(DelayTime::create(fadeTime), CallFunc::create(std::bind(&GameScene::goToMainMenu, this)), NULL);
+	this->runAction(action);
+	auto fadeIn = FadeIn::create(fadeTime);
+	darkness->runAction(fadeIn);
+}
+
+void GameScene::goToMainMenu() {
+	auto scene = MainMenuScene::createScene();
+	Director::getInstance()->replaceScene(scene);
+}
+
 void GameScene::shoot() {
 	if (!blockShooting) {
+		Sprite *bullet = Sprite::create(currentWeapon->bulletUri->getCString());
+		int posX = floorToPixelSize(playerMap.at("gun")->getPositionX() + currentWeapon->bulletOffsetX);
+		int posY = floorToPixelSize(playerMap.at("gun")->getPositionY() + currentWeapon->bulletOffsetY);
+		bullet->setPosition(Vec2(posX, posY));
+		bullet->setTag(2);
+		_bullets->addObject(bullet);
+		this->addChild(bullet, BULLET_TAG);
+
+		auto gunFire = Sprite::create(currentWeapon->gunFireUri->getCString());
+		gunFire->setPosition(playerMap.at("gun")->getPosition().x + currentWeapon->gunFireOffsetX, playerMap.at("gun")->getPosition().y + currentWeapon->gunFireOffsetY);
+		this->addChild(gunFire, GUN_FIRE_TAG, "gunFire");
+		auto action = Sequence::create(DelayTime::create(currentWeapon->gunFireRemoveDelay), CallFunc::create(std::bind(&GameScene::removeCorpse, this, gunFire)), NULL);
+		this->runAction(action);
+
+		currentWeapon->currentBulletsNumber--;
+		blockShooting = true;
+
 		if (currentWeapon->currentBulletsNumber <= 0) {
 			showReloadBar(currentWeapon->reloadTime);
 			auto allowShootingAction = Sequence::create(DelayTime::create(currentWeapon->reloadTime), CallFunc::create(std::bind(&GameScene::allowShooting, this)), NULL);
@@ -356,25 +422,8 @@ void GameScene::shoot() {
 			auto hideReloadBarAction = Sequence::create(DelayTime::create(currentWeapon->reloadTime), CallFunc::create(std::bind(&GameScene::hideReloadBar, this)), NULL);
 			this->runAction(hideReloadBarAction);
 			reloading = true;
-			blockShooting = true;
 		}
 		else {
-			Sprite *bullet = Sprite::create(currentWeapon->bulletUri->getCString());
-			int posX = floorToPixelSize(playerMap.at("gun")->getPositionX() + currentWeapon->bulletOffsetX);
-			int posY = floorToPixelSize(playerMap.at("gun")->getPositionY() + currentWeapon->bulletOffsetY);
-			bullet->setPosition(Vec2(posX, posY));
-			bullet->setTag(2);
-			_bullets->addObject(bullet);
-			this->addChild(bullet, BULLET_TAG);
-
-			auto gunFire = Sprite::create(currentWeapon->gunFireUri->getCString());
-			gunFire->setPosition(playerMap.at("gun")->getPosition().x + currentWeapon->gunFireOffsetX, playerMap.at("gun")->getPosition().y + currentWeapon->gunFireOffsetY);
-			this->addChild(gunFire, GUN_FIRE_TAG, "gunFire");
-			auto action = Sequence::create(DelayTime::create(currentWeapon->gunFireRemoveDelay), CallFunc::create(std::bind(&GameScene::removeCorpse, this, gunFire)), NULL);
-			this->runAction(action);
-
-			currentWeapon->currentBulletsNumber--;
-			blockShooting = true;
 			auto allowShootingAction = Sequence::create(DelayTime::create(currentWeapon->blockShootingTime), CallFunc::create(std::bind(&GameScene::allowShooting, this)), NULL);
 			this->runAction(allowShootingAction);
 		}
@@ -444,7 +493,23 @@ void GameScene::addMonster(){
 }
 
 void GameScene::gameLogic(float dt){
-	addMonster();
+	if (currentMonstersSendQuantity < levelMonstersQuantity) {
+		addMonster();
+		currentMonstersSendQuantity++;
+		currentMonstersInGameQuantity++;
+	}
+	else if (!currentMonstersInGameQuantity && !levelComplete) {
+		auto showLevelCompleteAction = Sequence::create(DelayTime::create(delayBeforeShowLevelComplete), CallFunc::create(std::bind(&GameScene::showLevelComplete, this)), NULL);
+		this->runAction(showLevelCompleteAction);
+		levelComplete = true;
+	}
+}
+
+void GameScene::showLevelComplete() {
+	auto winLabel = Label::create("Level complete! Tap the screen to continue", "fonts/Marker Felt.ttf", 64);
+	winLabel->setPosition(Point(winSize.width / 2, winSize.height / 1.5));
+	this->addChild(winLabel, 40);
+	levelCompleteAndMessageShown = true;
 }
 
 void GameScene::moveEnemies(float dt){
@@ -613,9 +678,9 @@ void GameScene::checkIntersections() {
 		loot->stopAllActionsByTag(666);
 		loot->runAction(seq);
 
-		coins += 100;
+		coins += 1;
 		char buffer1[100];
-		sprintf(buffer1, "%d", coins);
+		sprintf(buffer1, "x%d", coins);
 		coinsLabel->setString(buffer1);
 	}
 
@@ -627,7 +692,8 @@ void GameScene::checkIntersections() {
 		Monster *currentMonster = dynamic_cast<Monster*>(it);
 		Sprite *target = currentMonster->spritesMap.at("monster");
 		if (currentMonster->spritesMap.at("monster")->getPositionX() < 0) {
-			Sprite *monster_shadow = currentMonster->spritesMap.at("monster_shadow");
+			//Sprite *monster_shadow = currentMonster->spritesMap.at("monster_shadow");
+			currentMonstersInGameQuantity--;
 			for (auto key : currentMonster->spritesMap.keys()) {
 				removeCorpse(currentMonster->spritesMap.at(key));
 			}
@@ -681,22 +747,24 @@ void GameScene::onKillMonster(Monster* currentMonster) {
 	target->stopAllActions();	
 	target->runAction(Repeat::create(animate2, 1));
 
-	if (CCRANDOM_0_1() < dropCoinProbability) {
-		dropCoin(currentMonster);
+	currentMonstersInGameQuantity--;
+	if ((currentMonstersSendQuantity == levelMonstersQuantity) && !currentMonstersInGameQuantity) {
+		dropCoin(currentMonster, 3);
+	}
+	else if (CCRANDOM_0_1() < dropCoinProbability) {
+		dropCoin(currentMonster, 0);
 	}
 }
 
-void GameScene::dropCoin(Monster* monster) {
-	int randomTen = RandomHelper::random_int(1, 10);
-	int coinsNumber;
-	if (randomTen > 9) {
-		coinsNumber = 3;
-	}
-	else if (randomTen > 6) {
-		coinsNumber = 2;
-	}
-	else {
-		coinsNumber = 1;
+void GameScene::dropCoin(Monster* monster, int coinsNumber) {
+	int randomTen = RandomHelper::random_int(1, 100);
+	if (!coinsNumber) {
+		if (randomTen > 90) {
+			coinsNumber = 2;
+		}
+		else {
+			coinsNumber = 1;
+		}
 	}
 	
 	for (int i = 0; i < coinsNumber; i++) {
@@ -739,7 +807,18 @@ void GameScene::dropCoin(Monster* monster) {
 void GameScene::fadeHideMonster(Monster* monster) {
 	for (auto key : monster->spritesMap.keys()) {
 		runFadeActionForSprite(1.0f, monster->spritesMap.at(key));
+		//monster->spritesMap.at(key)->setColor(Color3B(0,0,0));
 	}
+	//auto action = Sequence::create(DelayTime::create(0.28f), CallFunc::create(std::bind(&GameScene::setSpriteVisibleTrue, this, monster)), NULL);
+	//this->runAction(action);
+}
+
+void GameScene::setSpriteVisibleTrue(Monster* monster) {
+	//for (auto key : monster->spritesMap.keys()) {
+	//	monster->spritesMap.at(key)->setColor(Color3B(255, 255, 255));
+	//}
+	//auto action = Sequence::create(DelayTime::create(0.28f), CallFunc::create(std::bind(&GameScene::fadeHideMonster, this, monster)), NULL);
+	//this->runAction(action);
 }
 
 void GameScene::update(float dt)
@@ -782,7 +861,6 @@ void GameScene::menuOpenMenuCallback(Ref* pSender) {
 }
 
 void GameScene::checkTouch() {
-
 	if (!this->isTouchEnabled()) {
 		acceleratorOffsetUpdateRequired = true;
 		this->setTouchEnabled(true);
@@ -792,8 +870,11 @@ void GameScene::checkTouch() {
 	}
 }
 
-void GameScene::openMenu() {
+//void GameScene::onEnter() {
+//	//this->resume();
+//}
 
+void GameScene::openMenu() {
 	Director::getInstance()->pause();
 	this->setTouchEnabled(false);
 	this->_eventDispatcher->pauseEventListenersForTarget(this->getChildByName("menuButton"));
